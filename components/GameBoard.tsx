@@ -9,10 +9,14 @@ import { Button } from "./ui/button";
 import { RotateCcw, PartyPopper } from "lucide-react";
 import { useState } from "react";
 import { getMemberById } from "@/lib/family-config";
+import { usePusher } from "@/hooks/usePusher";
 
 export function GameBoard() {
   const gameState = useGameStore();
   const [showReveal, setShowReveal] = useState(false);
+
+  // Set up Pusher for real-time sync
+  usePusher();
 
   const playerStates = getPlayerStates(gameState);
   const currentDrawer = getCurrentDrawer(gameState);

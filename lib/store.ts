@@ -35,7 +35,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   // Perform a draw
-  performDraw: () => {
+  performDraw: async () => {
     const currentState = get();
     
     // Check if game is already complete
@@ -44,22 +44,48 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return;
     }
 
-    // Execute the draw
-    const drawResult = executeDraw(currentState);
-    
-    if (!drawResult) {
-      set({ error: "No valid options available. Game needs to restart." });
-      return;
-    }
+    try {
+      // Check if Pusher is configured
+      const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY;
+      const usePusher = pusherKey && pusherKey !== "your_pusher_key_here";
 
-    // Update game state
-    const newState = updateGameStateAfterDraw(currentState, drawResult);
-    
-    set({
-      ...newState,
-      lastDrawResult: drawResult,
-      error: null,
-    });
+      if (usePusher) {
+        // Call API endpoint which will broadcast via Pusher
+        const response = await fetch("/api/draw", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(currentState),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          set({ error: error.error || "Failed to execute draw" });
+          return;
+        }
+
+        // State will be updated via Pusher event
+      } else {
+        // Local-only mode: execute draw directly
+        const drawResult = executeDraw(currentState);
+        
+        if (!drawResult) {
+          set({ error: "No valid options available. Game needs to restart." });
+          return;
+        }
+
+        // Update game state locally
+        const newState = updateGameStateAfterDraw(currentState, drawResult);
+        
+        set({
+          ...newState,
+          lastDrawResult: drawResult,
+          error: null,
+        });
+      }
+    } catch (error) {
+      console.error("Error performing draw:", error);
+      set({ error: "Failed to execute draw. Please try again." });
+    }
   },
 
   // Set game state (for syncing from server/pusher)
@@ -73,13 +99,36 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   // Reset game
-  resetGame: () => {
-    const initialState = initializeGame();
-    set({
-      ...initialState,
-      lastDrawResult: null,
-      error: null,
-    });
+  resetGame: async () => {
+    try {
+      // Check if Pusher is configured
+      const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY;
+      const usePusher = pusherKey && pusherKey !== "your_pusher_key_here";
+
+      if (usePusher) {
+        // Call API endpoint to broadcast reset
+        await fetch("/api/state", {
+          method: "DELETE",
+        });
+      }
+
+      // Reset state locally
+      const initialState = initializeGame();
+      set({
+        ...initialState,
+        lastDrawResult: null,
+        error: null,
+      });
+    } catch (error) {
+      console.error("Error resetting game:", error);
+      // Reset locally even if API call fails
+      const initialState = initializeGame();
+      set({
+        ...initialState,
+        lastDrawResult: null,
+        error: null,
+      });
+    }
   },
 }));
 
