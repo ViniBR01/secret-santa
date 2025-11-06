@@ -15,7 +15,7 @@ export function DrawButton({ onClick, disabled = false, currentDrawerName }: Dra
       {currentDrawerName && (
         <div className="text-center">
           <p className="text-lg sm:text-xl text-muted-foreground">
-            It's <span className="font-bold text-primary">{currentDrawerName}</span>'s turn
+            It&apos;s <span className="font-bold text-primary">{currentDrawerName}</span>&apos;s turn
           </p>
         </div>
       )}
