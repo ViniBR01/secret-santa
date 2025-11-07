@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, forwardRef } from "react";
 import { motion } from "framer-motion";
 import { Gift, Sparkles } from "lucide-react";
 
@@ -19,24 +19,23 @@ const BOX_PATTERNS = [
   { color: "from-amber-500 to-amber-600", accent: "border-amber-300" },
 ];
 
-export function MysterySelector({
-  optionCount,
-  onSelect,
-  disabled = false,
-  currentDrawerName,
-}: MysterySelectorProps) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+export const MysterySelector = forwardRef<HTMLDivElement, MysterySelectorProps>(
+  function MysterySelector(
+    { optionCount, onSelect, disabled = false, currentDrawerName },
+    ref
+  ) {
+    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+    const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
-  const handleBoxClick = (index: number) => {
-    if (disabled || selectedIndex !== null) return;
-    setSelectedIndex(index);
-    // Small delay before triggering the actual selection
-    setTimeout(() => onSelect(index), 300);
-  };
+    const handleBoxClick = (index: number) => {
+      if (disabled || selectedIndex !== null) return;
+      setSelectedIndex(index);
+      // Small delay before triggering the actual selection
+      setTimeout(() => onSelect(index), 300);
+    };
 
-  return (
-    <div className="w-full space-y-6">
+    return (
+      <div ref={ref} className="w-full space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
         <motion.div
@@ -207,6 +206,7 @@ export function MysterySelector({
         Each gift contains one of the available people. Choose wisely! 🎁
       </motion.p>
     </div>
-  );
-}
+    );
+  }
+);
 

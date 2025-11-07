@@ -40,9 +40,9 @@ export const familyConfig: FamilyConfig = {
       memberIds: ["diana", "olivia"],
     },
     {
-      id: "magos-luz",
-      name: "Tia Magos y Luz",
-      memberIds: ["magos", "luz"],
+      id: "magos",
+      name: "Tia Magos",
+      memberIds: ["magos"],
     },
   ],
   members: [
@@ -71,14 +71,13 @@ export const familyConfig: FamilyConfig = {
     { id: "mariu", name: "Mariu Perez", clicId: "perez-soni" },
     { id: "diana", name: "Diana Perez", clicId: "diana-olivia" },
     { id: "olivia", name: "Baby Olivia", clicId: "diana-olivia" },
-    // Tia Magos y Luz
-    { id: "magos", name: "Magos", clicId: "magos-luz" },
-    { id: "luz", name: "Luz", clicId: "magos-luz" }, // luz is not supposed to be in this clic
+    // Tia Magos
+    { id: "magos", name: "Magos", clicId: "magos-luz" }
   ],
   // Order in which family members will draw
   drawOrder: [
     "abuelo", "abuela", "magos", 
-    "beni", "hugo-grande", "laura", "mari", "luz", "carton", "irene",
+    "beni", "hugo-grande", "laura", "mari", "carton", "irene",
     "mimi", "vini",  "ale", "tipi",
     "mariu", "diana", "huguito",
     "marifer", "dani",

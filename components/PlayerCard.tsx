@@ -9,9 +9,10 @@ interface PlayerCardProps {
   playerState: PlayerState;
   isCurrentDrawer?: boolean;
   gifteeName?: string;
+  onStartTurn?: () => void;
 }
 
-export function PlayerCard({ playerState, isCurrentDrawer = false, gifteeName }: PlayerCardProps) {
+export function PlayerCard({ playerState, isCurrentDrawer = false, gifteeName, onStartTurn }: PlayerCardProps) {
   const { member, status, order } = playerState;
 
   const statusConfig = {
@@ -38,13 +39,18 @@ export function PlayerCard({ playerState, isCurrentDrawer = false, gifteeName }:
   const config = statusConfig[status];
   const Icon = config.icon;
 
+  // Only clickable if it's the current drawer in waiting status and has onStartTurn handler
+  const isClickable = isCurrentDrawer && status === "drawing" && onStartTurn;
+
   return (
     <Card
       className={cn(
         "transition-all duration-300",
         isCurrentDrawer && "ring-4 ring-primary ring-offset-2 shadow-xl scale-105",
-        status === "completed" && "opacity-75"
+        status === "completed" && "opacity-75",
+        isClickable && "cursor-pointer hover:shadow-2xl hover:scale-[1.07]"
       )}
+      onClick={isClickable ? onStartTurn : undefined}
     >
       <CardContent className="p-4 sm:p-6">
         <div className="flex items-center gap-3 sm:gap-4">
@@ -66,6 +72,9 @@ export function PlayerCard({ playerState, isCurrentDrawer = false, gifteeName }:
             <div className="flex items-center gap-2 mt-1">
               <Icon className="w-4 h-4" />
               <span className="text-sm">{config.label}</span>
+              {isClickable && (
+                <span className="text-xs italic ml-1">(tap to start)</span>
+              )}
             </div>
           </div>
 

@@ -19,6 +19,7 @@ export function GameBoard() {
   const gameState = useGameStore();
   const [showReveal, setShowReveal] = useState(false);
   const lastShownDrawerIdRef = useRef<string | null>(null);
+  const mysterySelectorRef = useRef<HTMLDivElement>(null);
 
   // Set up Pusher for real-time sync
   usePusher();
@@ -76,6 +77,19 @@ export function GameBoard() {
       setShowReveal(true);
     }
   }, [gameState.selectionPhase, gameState.lastDrawResult]);
+
+  // Auto-scroll to mystery selector when selection phase begins
+  useEffect(() => {
+    if (gameState.selectionPhase === 'selecting' && mysterySelectorRef.current) {
+      // Add a small delay to ensure the component is rendered
+      setTimeout(() => {
+        mysterySelectorRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }, 100);
+    }
+  }, [gameState.selectionPhase]);
 
   const handleReset = () => {
     if (confirm("Are you sure you want to restart the Secret Santa draw?")) {
@@ -160,6 +174,7 @@ export function GameBoard() {
               {gameState.selectionPhase === 'selecting' && currentDrawer && (
                 <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl p-6 sm:p-8">
                   <MysterySelector
+                    ref={mysterySelectorRef}
                     optionCount={gameState.currentOptions.length}
                     onSelect={handleSelection}
                     currentDrawerName={currentDrawer.name}
@@ -176,6 +191,14 @@ export function GameBoard() {
                   />
                 </div>
               )}
+
+              {/* Pool display - shown on mobile/tablet here, hidden on desktop */}
+              <div className="lg:hidden">
+                <PoolDisplay
+                  availableMembers={availableMembers}
+                  drawnMembers={drawnMembers}
+                />
+              </div>
 
               {/* Player cards - draw order */}
               <div className="space-y-3 sm:space-y-4">
@@ -196,6 +219,11 @@ export function GameBoard() {
                         playerState={playerState}
                         isCurrentDrawer={playerState.status === "drawing"}
                         gifteeName={gifteeName}
+                        onStartTurn={
+                          playerState.status === "drawing" && gameState.selectionPhase === 'waiting'
+                            ? handleStartTurn
+                            : undefined
+                        }
                       />
                     );
                   })}
@@ -212,8 +240,8 @@ export function GameBoard() {
               </div>
             </div>
 
-            {/* Right column: Pool display (1/3 width on desktop) */}
-            <div className="lg:col-span-1">
+            {/* Right column: Pool display (1/3 width on desktop, hidden on mobile) */}
+            <div className="hidden lg:block lg:col-span-1">
               <div className="lg:sticky lg:top-8">
                 <PoolDisplay
                   availableMembers={availableMembers}
