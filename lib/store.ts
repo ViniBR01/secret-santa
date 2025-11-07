@@ -104,7 +104,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY;
       const usePusher = pusherKey && pusherKey !== "your_pusher_key_here";
 
-      let state = currentState;
+      let state: GameState = currentState;
 
       if (usePusher) {
         // Call API endpoint for each remaining draw
