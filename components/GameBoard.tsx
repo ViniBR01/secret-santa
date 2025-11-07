@@ -12,13 +12,13 @@ import { MysterySelector } from "./MysterySelector";
 import { PoolDisplay } from "./PoolDisplay";
 import { Button } from "./ui/button";
 import { RotateCcw, PartyPopper, Sparkles } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePusher } from "@/hooks/usePusher";
 
 export function GameBoard() {
   const gameState = useGameStore();
   const [showReveal, setShowReveal] = useState(false);
-  const [hasShownReveal, setHasShownReveal] = useState(false);
+  const lastShownDrawerIdRef = useRef<string | null>(null);
 
   // Set up Pusher for real-time sync
   usePusher();
@@ -36,35 +36,52 @@ export function GameBoard() {
 
   // Handle starting a new turn
   const handleStartTurn = () => {
-    setHasShownReveal(false); // Reset for next turn
     gameState.prepareOptions();
   };
 
   // Handle player selection
   const handleSelection = (index: number) => {
+    console.log('🎁 Player selected box:', index);
     gameState.makeSelection(index);
   };
 
   // Handle reveal complete
   const handleRevealComplete = () => {
+    console.log('🎉 Reveal animation complete, hiding overlay');
     setShowReveal(false);
-    setHasShownReveal(true);
-    // Clear the last draw result to prevent re-triggering
-    gameState.setLastDrawResult(null);
+    // Clear the last draw result after a short delay to prevent re-triggering
+    setTimeout(() => {
+      console.log('🧹 Clearing lastDrawResult');
+      gameState.setLastDrawResult(null);
+    }, 100);
   };
 
-  // Show reveal animation when we transition to revealing phase (only once per draw)
+  // Show reveal animation when we have a new draw result
   useEffect(() => {
-    if (gameState.selectionPhase === 'revealing' && gameState.lastDrawResult && !hasShownReveal) {
+    console.log('🔍 useEffect triggered:', {
+      selectionPhase: gameState.selectionPhase,
+      hasLastDrawResult: !!gameState.lastDrawResult,
+      drawerId: gameState.lastDrawResult?.drawerId,
+      lastShownDrawerId: lastShownDrawerIdRef.current,
+      showReveal,
+    });
+    
+    if (
+      gameState.selectionPhase === 'revealing' && 
+      gameState.lastDrawResult && 
+      gameState.lastDrawResult.drawerId !== lastShownDrawerIdRef.current
+    ) {
+      console.log('✅ Setting showReveal to TRUE for drawer:', gameState.lastDrawResult.drawerId);
+      lastShownDrawerIdRef.current = gameState.lastDrawResult.drawerId;
       setShowReveal(true);
     }
-  }, [gameState.selectionPhase, gameState.lastDrawResult, hasShownReveal]);
+  }, [gameState.selectionPhase, gameState.lastDrawResult]);
 
   const handleReset = () => {
     if (confirm("Are you sure you want to restart the Secret Santa draw?")) {
       gameState.resetGame();
       setShowReveal(false);
-      setHasShownReveal(false);
+      lastShownDrawerIdRef.current = null;
     }
   };
 

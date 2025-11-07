@@ -44,8 +44,18 @@ export function usePusher() {
     channel.bind(
       PUSHER_EVENTS.DRAW_EXECUTED,
       (data: { drawResult: DrawResult; newGameState: GameState }) => {
-        setGameState(data.newGameState);
+        // Update state and lastDrawResult atomically by merging them
+        setGameState({
+          ...data.newGameState,
+          // Temporarily set to revealing to trigger animation
+          selectionPhase: 'revealing',
+        });
         setLastDrawResult(data.drawResult);
+        
+        // Then update to the final state after a brief moment
+        setTimeout(() => {
+          setGameState(data.newGameState);
+        }, 50);
       }
     );
 
