@@ -30,6 +30,8 @@ export const PUSHER_EVENTS = {
   DRAW_EXECUTED: "draw-executed",
   GAME_RESET: "game-reset",
   GAME_STATE_UPDATE: "game-state-update",
+  OPTIONS_PREPARED: "options-prepared",
+  SELECTION_REVEALING: "selection-revealing",
 } as const;
 
 // Channel name

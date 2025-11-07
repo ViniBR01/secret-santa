@@ -32,7 +32,12 @@ export const familyConfig: FamilyConfig = {
     {
       id: "perez-soni",
       name: "Los Perez",
-      memberIds: ["hugo-grande", "mari", "huguito", "mariu", "diana", "olivia"],
+      memberIds: ["hugo-grande", "mari", "huguito", "mariu"],
+    },
+    {
+      id: "diana-olivia",
+      name: "Familia de Olivia",
+      memberIds: ["diana", "olivia"],
     },
     {
       id: "magos-luz",
@@ -55,7 +60,7 @@ export const familyConfig: FamilyConfig = {
     { id: "vini", name: "Vinicius da Silva", clicId: "silva-pelaez" },
     { id: "tipi", name: "Maria Jose", clicId: "silva-pelaez" },
     // Los Soni Cortez
-    { id: "carton", name: "Jose Carlos", clicId: "soni-cortez" },
+    { id: "carton", name: "Juan Carlos", clicId: "soni-cortez" },
     { id: "irene", name: "Irene Cortez", clicId: "soni-cortez" },
     { id: "marifer", name: "Maria Fernanda", clicId: "soni-cortez" },
     { id: "dani", name: "Daniela", clicId: "soni-cortez" },
@@ -64,11 +69,11 @@ export const familyConfig: FamilyConfig = {
     { id: "mari", name: "Mari", clicId: "perez-soni" },
     { id: "huguito", name: "Hugo Perez Jr.", clicId: "perez-soni" },
     { id: "mariu", name: "Mariu Perez", clicId: "perez-soni" },
-    { id: "diana", name: "Diana Perez", clicId: "perez-soni" },
-    { id: "olivia", name: "Baby Olivia", clicId: "perez-soni" },
+    { id: "diana", name: "Diana Perez", clicId: "diana-olivia" },
+    { id: "olivia", name: "Baby Olivia", clicId: "diana-olivia" },
     // Tia Magos y Luz
     { id: "magos", name: "Magos", clicId: "magos-luz" },
-    { id: "luz", name: "Luz", clicId: "magos-luz" },
+    { id: "luz", name: "Luz", clicId: "magos-luz" }, // luz is not supposed to be in this clic
   ],
   // Order in which family members will draw
   drawOrder: [

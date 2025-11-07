@@ -24,6 +24,22 @@ export function usePusher() {
     const pusher = getPusherClient();
     const channel = pusher.subscribe(PUSHER_CHANNEL);
 
+    // Listen for options prepared events
+    channel.bind(
+      PUSHER_EVENTS.OPTIONS_PREPARED,
+      (data: { newGameState: GameState }) => {
+        setGameState(data.newGameState);
+      }
+    );
+
+    // Listen for selection revealing events
+    channel.bind(
+      PUSHER_EVENTS.SELECTION_REVEALING,
+      (data: { newGameState: GameState }) => {
+        setGameState(data.newGameState);
+      }
+    );
+
     // Listen for draw executed events
     channel.bind(
       PUSHER_EVENTS.DRAW_EXECUTED,

@@ -4,11 +4,14 @@ A modern web application to automate your family Secret Santa gift exchange with
 
 ## Features
 
+- ✅ **Interactive Mystery Selection** - Players choose from mystery gift boxes without knowing who's inside
 - ✅ **Pre-configured family structure** - Define family members and clics (family units)
 - ✅ **Real-time updates** - All participants see draws happen live (with Pusher)
-- ✅ **Automatic validation** - No self-draws, no drawing within your own clic
-- ✅ **Sequential draws** - Pre-defined order with visual feedback
-- ✅ **Mobile-friendly** - Beautiful responsive UI with celebration animations
+- ✅ **Automatic validation** - No self-draws, no drawing within your own clic with backtracking algorithm
+- ✅ **Sequential draws** - Pre-defined order with narrative prompts and visual feedback
+- ✅ **Dramatic reveals** - Multi-stage suspense animations with confetti celebration
+- ✅ **Live pool display** - See who's still available and who's been drawn in real-time
+- ✅ **Mobile-friendly** - Beautiful responsive UI optimized for all devices
 - ✅ **Local-only mode** - Works without Pusher configuration for single-device use
 
 ## Getting Started
@@ -69,12 +72,20 @@ If using Pusher, all family members can join by opening the same URL on their de
 ## How It Works
 
 1. **Setup** - Family structure is pre-configured in `lib/family-config.ts`
-2. **Draw Order** - Each person draws in the pre-defined order
-3. **Validation** - The app automatically ensures:
+2. **Turn Announcement** - Each person's turn is announced with festive narrative prompts
+3. **Mystery Selection** - The current player sees 2-5 mystery gift boxes (depending on valid options)
+4. **Choice** - Player clicks one mystery box to make their selection
+5. **Suspense Build-up** - Dramatic animation sequence:
+   - Opening mystery gift...
+   - Box opening animation
+   - Big reveal with confetti!
+6. **Validation** - The app automatically ensures using backtracking algorithm:
    - No one draws themselves
    - No one draws someone in their own clic
-4. **Real-time Sync** - When someone draws, everyone sees it happen simultaneously
-5. **Celebration** - Beautiful animations celebrate each draw
+   - Every choice leads to a completable game
+7. **Pool Tracking** - Sidebar shows remaining available people and who's been drawn
+8. **Real-time Sync** - When someone makes a selection, everyone sees it happen simultaneously
+9. **Next Turn** - Automatic progression to the next person in the draw order
 
 ## Deployment
 
@@ -100,23 +111,32 @@ In Vercel dashboard, add:
 ```
 secret-santa/
 ├── app/
-│   ├── layout.tsx           # Root layout
-│   ├── page.tsx             # Main game screen
+│   ├── layout.tsx                  # Root layout
+│   ├── page.tsx                    # Main game screen
 │   └── api/
-│       ├── draw/route.ts    # Execute draw endpoint
-│       └── state/route.ts   # Game state sync endpoint
+│       ├── draw/
+│       │   ├── route.ts           # Legacy draw endpoint
+│       │   ├── options/route.ts   # Prepare selection options
+│       │   └── select/route.ts    # Finalize player selection
+│       └── state/route.ts         # Game state sync endpoint
 ├── components/
-│   ├── GameBoard.tsx        # Main game display
-│   ├── PlayerCard.tsx       # Individual player status
-│   ├── DrawButton.tsx       # Draw action button
-│   └── RevealAnimation.tsx  # Name reveal effect
+│   ├── GameBoard.tsx              # Main game orchestrator
+│   ├── MysterySelector.tsx        # Interactive gift box selection
+│   ├── NarrativePrompt.tsx        # Story-driven turn announcements
+│   ├── PoolDisplay.tsx            # Live available/drawn players sidebar
+│   ├── RevealAnimation.tsx        # Multi-stage reveal with confetti
+│   ├── PlayerCard.tsx             # Individual player status
+│   ├── DrawButton.tsx             # Draw action button
+│   └── QuickDrawAllButton.tsx     # Auto-complete remaining draws
 ├── lib/
-│   ├── game-logic.ts        # Draw algorithm & validation
-│   ├── pusher.ts            # Pusher client/server setup
-│   ├── family-config.ts     # Family structure data
-│   └── store.ts             # State management (Zustand)
+│   ├── game-logic.ts              # Selection algorithm & backtracking
+│   ├── pusher.ts                  # Pusher client/server setup
+│   ├── family-config.ts           # Family structure data
+│   └── store.ts                   # State management (Zustand)
+├── hooks/
+│   └── usePusher.ts               # Real-time sync hook
 └── types/
-    └── index.ts             # TypeScript interfaces
+    └── index.ts                   # TypeScript interfaces
 ```
 
 ## Tech Stack
@@ -124,6 +144,7 @@ secret-santa/
 - **Next.js 15** - React framework with App Router
 - **TypeScript** - Type safety
 - **Tailwind CSS** - Styling
+- **Framer Motion** - Advanced animations and transitions
 - **Zustand** - State management
 - **Pusher** - Real-time WebSocket communication
 - **Vercel** - Hosting platform
@@ -154,9 +175,19 @@ See `PLAN.md` for future enhancement ideas!
 - Ensure all devices are on the same app URL
 
 **Q: Getting "No valid options" error**
-- This happens if the random draw order makes it impossible to complete
-- Click "Reset Game" to restart with a new random sequence
-- Consider adjusting your clic configuration if this happens frequently
+- This should rarely happen due to the backtracking algorithm
+- If it does occur, click "Reset Game" to restart
+- The algorithm ensures only choices that lead to a complete game are presented
+
+**Q: How many options will each person see?**
+- The number varies (typically 2-5 mystery boxes)
+- Only valid choices that guarantee a completable game are shown
+- Later in the draw order, fewer options may be available
+
+**Q: Can players see who's in each box?**
+- No! That's the mystery element
+- Players only see numbered gift boxes
+- They can see the list of remaining people in the sidebar, but not which box contains whom
 
 ## License
 

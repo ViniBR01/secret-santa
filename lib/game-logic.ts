@@ -1,4 +1,4 @@
-import { GameState, DrawResult } from "@/types";
+import { GameState, DrawResult, DrawOptions } from "@/types";
 import { familyConfig, getMemberById, getMembersInSameClic } from "./family-config";
 
 /**
@@ -42,12 +42,48 @@ export function initializeGame(): GameState {
     assignments: {},
     availableGiftees: familyConfig.members.map((m) => m.id),
     isComplete: false,
+    selectionPhase: 'waiting',
+    currentOptions: [],
+    selectedIndex: null,
   };
 }
 
 /**
- * Execute a draw for the current drawer
- * Returns the draw result or null if no valid options exist
+ * Backtracking algorithm to check if a complete solution exists
+ * from the current state with a specific assignment
+ */
+function canCompleteDraw(
+  drawerIndex: number,
+  assignments: Record<string, string>,
+  availableGiftees: string[]
+): boolean {
+  // Base case: all drawers have been assigned
+  if (drawerIndex >= familyConfig.drawOrder.length) {
+    return true;
+  }
+
+  const drawerId = familyConfig.drawOrder[drawerIndex];
+  const validOptions = getValidGiftees(drawerId, availableGiftees);
+
+  // Try each valid option
+  for (const gifteeId of validOptions) {
+    // Make this assignment
+    const newAssignments = { ...assignments, [drawerId]: gifteeId };
+    const newAvailableGiftees = availableGiftees.filter(id => id !== gifteeId);
+
+    // Recursively check if we can complete from this state
+    if (canCompleteDraw(drawerIndex + 1, newAssignments, newAvailableGiftees)) {
+      return true;
+    }
+  }
+
+  // No valid option leads to completion
+  return false;
+}
+
+/**
+ * Execute a draw for the current drawer with backtracking
+ * Returns the draw result, guaranteed to find a valid solution
  */
 export function executeDraw(gameState: GameState): DrawResult | null {
   const { currentDrawerIndex, availableGiftees, assignments } = gameState;
@@ -62,12 +98,29 @@ export function executeDraw(gameState: GameState): DrawResult | null {
   const validOptions = getValidGiftees(drawerId, availableGiftees);
   
   if (validOptions.length === 0) {
-    return null; // No valid options - game needs to restart
+    return null; // No valid options - should not happen with backtracking
   }
 
-  // Randomly select from valid options
-  const randomIndex = Math.floor(Math.random() * validOptions.length);
-  const gifteeId = validOptions[randomIndex];
+  // Filter options to only those that lead to a complete solution
+  const viableOptions = validOptions.filter(gifteeId => {
+    const newAssignments = { ...assignments, [drawerId]: gifteeId };
+    const newAvailableGiftees = availableGiftees.filter(id => id !== gifteeId);
+    
+    // Check if this choice leads to a completable game
+    return canCompleteDraw(
+      currentDrawerIndex + 1,
+      newAssignments,
+      newAvailableGiftees
+    );
+  });
+
+  // If no viable options, fall back to any valid option
+  // (this shouldn't happen in practice)
+  const optionsToUse = viableOptions.length > 0 ? viableOptions : validOptions;
+
+  // Randomly select from viable options
+  const randomIndex = Math.floor(Math.random() * optionsToUse.length);
+  const gifteeId = optionsToUse[randomIndex];
   const giftee = getMemberById(gifteeId);
 
   if (!giftee) {
@@ -105,6 +158,9 @@ export function updateGameStateAfterDraw(
     assignments: newAssignments,
     availableGiftees: newAvailableGiftees,
     isComplete,
+    selectionPhase: isComplete ? 'complete' : 'waiting',
+    currentOptions: [],
+    selectedIndex: null,
   };
 }
 
@@ -125,6 +181,77 @@ export function canGameBeCompleted(gameState: GameState): boolean {
   const validOptions = getValidGiftees(currentDrawerId, availableGiftees);
   
   return validOptions.length > 0;
+}
+
+/**
+ * Prepare draw options for the current drawer
+ * Returns all viable options that lead to a completable game
+ */
+export function prepareDrawOptions(gameState: GameState): DrawOptions | null {
+  const { currentDrawerIndex, availableGiftees, assignments } = gameState;
+  
+  // Get current drawer
+  const drawerId = familyConfig.drawOrder[currentDrawerIndex];
+  if (!drawerId) {
+    return null;
+  }
+
+  // Get valid options for this drawer
+  const validOptions = getValidGiftees(drawerId, availableGiftees);
+  
+  if (validOptions.length === 0) {
+    return null;
+  }
+
+  // Filter options to only those that lead to a complete solution
+  const viableOptions = validOptions.filter(gifteeId => {
+    const newAssignments = { ...assignments, [drawerId]: gifteeId };
+    const newAvailableGiftees = availableGiftees.filter(id => id !== gifteeId);
+    
+    // Check if this choice leads to a completable game
+    return canCompleteDraw(
+      currentDrawerIndex + 1,
+      newAssignments,
+      newAvailableGiftees
+    );
+  });
+
+  // If no viable options, fall back to any valid option
+  const optionsToUse = viableOptions.length > 0 ? viableOptions : validOptions;
+
+  return {
+    drawerId,
+    viableGifteeIds: optionsToUse,
+  };
+}
+
+/**
+ * Finalize a player's selection
+ * Takes the game state and the index of the chosen option
+ */
+export function finalizeSelection(
+  gameState: GameState,
+  choiceIndex: number
+): DrawResult | null {
+  const { currentOptions } = gameState;
+  
+  if (choiceIndex < 0 || choiceIndex >= currentOptions.length) {
+    return null;
+  }
+
+  const gifteeId = currentOptions[choiceIndex];
+  const giftee = getMemberById(gifteeId);
+  const drawerId = familyConfig.drawOrder[gameState.currentDrawerIndex];
+
+  if (!giftee || !drawerId) {
+    return null;
+  }
+
+  return {
+    drawerId,
+    gifteeId,
+    gifteeName: giftee.name,
+  };
 }
 
 /**
