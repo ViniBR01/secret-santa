@@ -102,13 +102,20 @@ export function GameBoard() {
         <div className="space-y-3 sm:space-y-4">
           <h2 className="text-xl sm:text-2xl font-semibold">Draw Order</h2>
           <div className="space-y-3">
-            {playerStates.map((playerState) => (
-              <PlayerCard
-                key={playerState.member.id}
-                playerState={playerState}
-                isCurrentDrawer={playerState.status === "drawing"}
-              />
-            ))}
+            {playerStates.map((playerState) => {
+              // Look up the giftee for this player if they've completed their draw
+              const gifteeId = gameState.assignments[playerState.member.id];
+              const gifteeName = gifteeId ? getMemberById(gifteeId)?.name : undefined;
+              
+              return (
+                <PlayerCard
+                  key={playerState.member.id}
+                  playerState={playerState}
+                  isCurrentDrawer={playerState.status === "drawing"}
+                  gifteeName={gifteeName}
+                />
+              );
+            })}
           </div>
         </div>
 

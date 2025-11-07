@@ -8,9 +8,10 @@ import { cn } from "@/lib/utils";
 interface PlayerCardProps {
   playerState: PlayerState;
   isCurrentDrawer?: boolean;
+  gifteeName?: string;
 }
 
-export function PlayerCard({ playerState, isCurrentDrawer = false }: PlayerCardProps) {
+export function PlayerCard({ playerState, isCurrentDrawer = false, gifteeName }: PlayerCardProps) {
   const { member, status, order } = playerState;
 
   const statusConfig = {
@@ -56,6 +57,11 @@ export function PlayerCard({ playerState, isCurrentDrawer = false }: PlayerCardP
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-lg sm:text-xl truncate">
               {member.name}
+              {status === "completed" && gifteeName && (
+                <span className="text-muted-foreground font-normal ml-2">
+                  → {gifteeName}
+                </span>
+              )}
             </h3>
             <div className="flex items-center gap-2 mt-1">
               <Icon className="w-4 h-4" />
