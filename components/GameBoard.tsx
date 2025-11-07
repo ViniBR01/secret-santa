@@ -4,6 +4,8 @@ import { useGameStore } from "@/lib/store";
 import { getPlayerStates, getCurrentDrawer } from "@/lib/game-logic";
 import { PlayerCard } from "./PlayerCard";
 import { DrawButton } from "./DrawButton";
+import { QuickDrawAllButton } from "./QuickDrawAllButton";
+import { ResultsDisplay } from "./ResultsDisplay";
 import { RevealAnimation } from "./RevealAnimation";
 import { Button } from "./ui/button";
 import { RotateCcw, PartyPopper } from "lucide-react";
@@ -24,6 +26,12 @@ export function GameBoard() {
   const handleDraw = () => {
     gameState.performDraw();
     setShowReveal(true);
+  };
+
+  const handleQuickDrawAll = async () => {
+    if (confirm("This will complete all remaining draws. Continue?")) {
+      await gameState.quickDrawAll();
+    }
   };
 
   const handleRevealComplete = () => {
@@ -58,26 +66,34 @@ export function GameBoard() {
           </div>
         )}
 
-        {/* Game complete message */}
+        {/* Game complete message and results */}
         {gameState.isComplete && (
-          <div className="bg-green-500/10 border border-green-500 rounded-lg p-6 text-center space-y-4">
-            <PartyPopper className="w-16 h-16 mx-auto text-green-500" />
-            <h2 className="text-2xl sm:text-3xl font-bold text-green-700 dark:text-green-400">
-              All Done! 🎉
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Everyone has been assigned their Secret Santa!
-            </p>
+          <div className="space-y-6">
+            <div className="bg-green-500/10 border border-green-500 rounded-lg p-6 text-center space-y-4">
+              <PartyPopper className="w-16 h-16 mx-auto text-green-500" />
+              <h2 className="text-2xl sm:text-3xl font-bold text-green-700 dark:text-green-400">
+                All Done! 🎉
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                Everyone has been assigned their Secret Santa!
+              </p>
+            </div>
+            <ResultsDisplay assignments={gameState.assignments} />
           </div>
         )}
 
-        {/* Draw button */}
+        {/* Draw buttons */}
         {!gameState.isComplete && (
-          <div className="flex justify-center py-4">
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 py-4">
             <DrawButton
               onClick={handleDraw}
               disabled={gameState.isComplete}
               currentDrawerName={currentDrawer?.name}
+            />
+            <QuickDrawAllButton
+              onClick={handleQuickDrawAll}
+              disabled={gameState.isComplete}
+              currentDrawerIndex={gameState.currentDrawerIndex}
             />
           </div>
         )}

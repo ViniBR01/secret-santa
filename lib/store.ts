@@ -13,6 +13,7 @@ interface GameStore extends GameState {
   // Actions
   initGame: () => void;
   performDraw: () => void;
+  quickDrawAll: () => Promise<void>;
   setGameState: (state: GameState) => void;
   setLastDrawResult: (result: DrawResult | null) => void;
   resetGame: () => void;
@@ -85,6 +86,73 @@ export const useGameStore = create<GameStore>((set, get) => ({
     } catch (error) {
       console.error("Error performing draw:", error);
       set({ error: "Failed to execute draw. Please try again." });
+    }
+  },
+
+  // Quick draw all remaining players
+  quickDrawAll: async () => {
+    const currentState = get();
+    
+    // Check if game is already complete
+    if (currentState.isComplete) {
+      set({ error: "Game is already complete!" });
+      return;
+    }
+
+    try {
+      // Check if Pusher is configured
+      const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY;
+      const usePusher = pusherKey && pusherKey !== "your_pusher_key_here";
+
+      let state = currentState;
+
+      if (usePusher) {
+        // Call API endpoint for each remaining draw
+        while (!state.isComplete) {
+          const response = await fetch("/api/draw", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(state),
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            set({ error: error.error || "Failed to execute draw" });
+            return;
+          }
+
+          const result = await response.json();
+          state = result.newGameState;
+
+          // Small delay to allow Pusher events to propagate
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      } else {
+        // Local-only mode: execute all draws directly
+        while (!state.isComplete) {
+          const drawResult = executeDraw(state);
+          
+          if (!drawResult) {
+            set({ error: "No valid options available. Game needs to restart." });
+            return;
+          }
+
+          // Update game state locally
+          state = updateGameStateAfterDraw(state, drawResult);
+          
+          set({
+            ...state,
+            lastDrawResult: drawResult,
+            error: null,
+          });
+
+          // Small delay between draws for better UX
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+      }
+    } catch (error) {
+      console.error("Error performing quick draw all:", error);
+      set({ error: "Failed to execute quick draw. Please try again." });
     }
   },
 

@@ -5,38 +5,80 @@ import { FamilyConfig } from "@/types";
 export const familyConfig: FamilyConfig = {
   clics: [
     {
-      id: "clic1",
-      name: "Family Unit 1",
-      memberIds: ["alice", "bob"],
+      id: "abuelos",
+      name: "Los Abuelos",
+      memberIds: ["abuela", "abuelo"],
     },
     {
-      id: "clic2",
-      name: "Family Unit 2",
-      memberIds: ["charlie", "diana"],
+      id: "pelaez-soni",
+      name: "Los Pelaez-Soni",
+      memberIds: ["beni", "laura", "ale"],
     },
     {
-      id: "clic3",
-      name: "Family Unit 3",
-      memberIds: ["eve", "frank"],
+      id: "sanches-pelaez",
+      name: "Los de Quito",
+      memberIds: ["mimi", "matias"],
     },
     {
-      id: "clic4",
-      name: "Singles",
-      memberIds: ["grace", "henry"],
+      id: "silva-pelaez",
+      name: "Los de EEUU",
+      memberIds: ["vini", "tipi"],
+    },
+    {
+      id: "soni-cortez",
+      name: "Los Soni Cortez",
+      memberIds: ["carton", "irene", "marifer", "dani"],
+    },
+    {
+      id: "perez-soni",
+      name: "Los Perez",
+      memberIds: ["hugo-grande", "mari", "huguito", "mariu", "diana", "olivia"],
+    },
+    {
+      id: "magos-luz",
+      name: "Tia Magos y Luz",
+      memberIds: ["magos", "luz"],
     },
   ],
   members: [
-    { id: "alice", name: "Alice", clicId: "clic1" },
-    { id: "bob", name: "Bob", clicId: "clic1" },
-    { id: "charlie", name: "Charlie", clicId: "clic2" },
-    { id: "diana", name: "Diana", clicId: "clic2" },
-    { id: "eve", name: "Eve", clicId: "clic3" },
-    { id: "frank", name: "Frank", clicId: "clic3" },
-    { id: "grace", name: "Grace", clicId: "clic4" },
-    { id: "henry", name: "Henry", clicId: "clic4" },
+    // Los Abuelos
+    { id: "abuela", name: "bis. Maricela", clicId: "abuelos" },
+    { id: "abuelo", name: "bis. Victor Manuel", clicId: "abuelos" },
+    // Los Pelaez-Soni
+    { id: "beni", name: "Benigno", clicId: "pelaez-soni" },
+    { id: "laura", name: "Laura Soni", clicId: "pelaez-soni" },
+    { id: "ale", name: "Ale Pelaez", clicId: "pelaez-soni" },
+    // Los de Quito
+    { id: "mimi", name: "Laura Pelaez", clicId: "sanches-pelaez" },
+    { id: "matias", name: "Matias Sanches", clicId: "sanches-pelaez" },
+    // Los de EEUU
+    { id: "vini", name: "Vinicius da Silva", clicId: "silva-pelaez" },
+    { id: "tipi", name: "Maria Jose", clicId: "silva-pelaez" },
+    // Los Soni Cortez
+    { id: "carton", name: "Jose Carlos", clicId: "soni-cortez" },
+    { id: "irene", name: "Irene Cortez", clicId: "soni-cortez" },
+    { id: "marifer", name: "Maria Fernanda", clicId: "soni-cortez" },
+    { id: "dani", name: "Daniela", clicId: "soni-cortez" },
+    // Los Perez
+    { id: "hugo-grande", name: "Hugo Perez Sr.", clicId: "perez-soni" },
+    { id: "mari", name: "Mari", clicId: "perez-soni" },
+    { id: "huguito", name: "Hugo Perez Jr.", clicId: "perez-soni" },
+    { id: "mariu", name: "Mariu Perez", clicId: "perez-soni" },
+    { id: "diana", name: "Diana Perez", clicId: "perez-soni" },
+    { id: "olivia", name: "Baby Olivia", clicId: "perez-soni" },
+    // Tia Magos y Luz
+    { id: "magos", name: "Magos", clicId: "magos-luz" },
+    { id: "luz", name: "Luz", clicId: "magos-luz" },
   ],
   // Order in which family members will draw
-  drawOrder: ["alice", "bob", "charlie", "diana", "eve", "frank", "grace", "henry"],
+  drawOrder: [
+    "abuelo", "abuela", "magos", 
+    "beni", "hugo-grande", "laura", "mari", "luz", "carton", "irene",
+    "mimi", "vini",  "ale", "tipi",
+    "mariu", "diana", "huguito",
+    "marifer", "dani",
+    "matias", "olivia"
+  ],
 };
 
 // Helper function to get member by ID
