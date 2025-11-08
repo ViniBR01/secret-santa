@@ -12,6 +12,7 @@ import { MysterySelector } from "./MysterySelector";
 import { PoolDisplay } from "./PoolDisplay";
 import { WaitingForTurn } from "./WaitingForTurn";
 import { YourTurnNotification } from "./YourTurnNotification";
+import { AdminPanel } from "./AdminPanel";
 import { Button } from "./ui/button";
 import { RotateCcw, PartyPopper, Sparkles, LogOut } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
@@ -96,6 +97,21 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
     } catch (err) {
       console.error("Error logging out:", err);
     }
+  };
+  
+  // Admin action: Skip turn
+  const handleAdminSkipTurn = () => {
+    if (!confirm(`Skip ${currentDrawer?.name}'s turn? This cannot be undone.`)) {
+      return;
+    }
+    // Will be implemented in next step
+    console.log("Skip turn requested");
+  };
+  
+  // Admin action: Draw for player
+  const handleAdminDrawForPlayer = () => {
+    // Will be implemented in next step
+    console.log("Draw for player requested");
   };
 
   // Show reveal animation when we have a new draw result
@@ -365,6 +381,16 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
             gifteeName={gameState.lastDrawResult.gifteeName}
             drawerName={getMemberById(gameState.lastDrawResult.drawerId)?.name || "Someone"}
             onComplete={handleRevealComplete}
+          />
+        )}
+        
+        {/* Admin Panel (only for admin) */}
+        {isAdmin && (
+          <AdminPanel
+            gameState={gameState}
+            onSkipTurn={handleAdminSkipTurn}
+            onDrawForPlayer={handleAdminDrawForPlayer}
+            currentPlayerId={playerId}
           />
         )}
       </div>
