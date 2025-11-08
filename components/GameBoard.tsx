@@ -13,6 +13,7 @@ import { PoolDisplay } from "./PoolDisplay";
 import { WaitingForTurn } from "./WaitingForTurn";
 import { YourTurnNotification } from "./YourTurnNotification";
 import { AdminPanel } from "./AdminPanel";
+import { AdminDrawForPlayer } from "./AdminDrawForPlayer";
 import { Button } from "./ui/button";
 import { RotateCcw, PartyPopper, Sparkles, LogOut } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
@@ -30,6 +31,7 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
   const router = useRouter();
   const gameState = useGameStore();
   const [showReveal, setShowReveal] = useState(false);
+  const [showAdminDrawDialog, setShowAdminDrawDialog] = useState(false);
   const lastShownDrawerIdRef = useRef<string | null>(null);
   const mysterySelectorRef = useRef<HTMLDivElement>(null);
 
@@ -100,18 +102,63 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
   };
   
   // Admin action: Skip turn
-  const handleAdminSkipTurn = () => {
+  const handleAdminSkipTurn = async () => {
     if (!confirm(`Skip ${currentDrawer?.name}'s turn? This cannot be undone.`)) {
       return;
     }
-    // Will be implemented in next step
-    console.log("Skip turn requested");
+    
+    try {
+      const response = await fetch("/api/admin/skip-turn", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gameState }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        alert(`Failed to skip turn: ${error.error}`);
+        return;
+      }
+
+      const data = await response.json();
+      console.log("Turn skipped:", data.message);
+      // State will be updated via Pusher
+    } catch (err) {
+      console.error("Error skipping turn:", err);
+      alert("Failed to skip turn. Please try again.");
+    }
   };
   
   // Admin action: Draw for player
   const handleAdminDrawForPlayer = () => {
-    // Will be implemented in next step
-    console.log("Draw for player requested");
+    if (gameState.selectionPhase !== 'selecting') {
+      alert("Can only draw for player during selection phase");
+      return;
+    }
+    setShowAdminDrawDialog(true);
+  };
+  
+  // Admin action: Confirm draw for player
+  const handleConfirmAdminDraw = async (choiceIndex: number) => {
+    try {
+      const response = await fetch("/api/admin/draw-for-player", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gameState, choiceIndex }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        alert(`Failed to draw for player: ${error.error}`);
+        return;
+      }
+
+      setShowAdminDrawDialog(false);
+      // State will be updated via Pusher
+    } catch (err) {
+      console.error("Error drawing for player:", err);
+      alert("Failed to draw for player. Please try again.");
+    }
   };
 
   // Show reveal animation when we have a new draw result
@@ -391,6 +438,16 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
             onSkipTurn={handleAdminSkipTurn}
             onDrawForPlayer={handleAdminDrawForPlayer}
             currentPlayerId={playerId}
+          />
+        )}
+        
+        {/* Admin Draw for Player Dialog */}
+        {showAdminDrawDialog && currentDrawer && gameState.selectionPhase === 'selecting' && (
+          <AdminDrawForPlayer
+            currentDrawerName={currentDrawer.name}
+            optionCount={gameState.currentOptions.length}
+            onSelect={handleConfirmAdminDraw}
+            onCancel={() => setShowAdminDrawDialog(false)}
           />
         )}
       </div>
