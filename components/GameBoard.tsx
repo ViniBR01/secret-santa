@@ -10,12 +10,22 @@ import { RevealAnimation } from "./RevealAnimation";
 import { NarrativePrompt } from "./NarrativePrompt";
 import { MysterySelector } from "./MysterySelector";
 import { PoolDisplay } from "./PoolDisplay";
+import { WaitingForTurn } from "./WaitingForTurn";
+import { YourTurnNotification } from "./YourTurnNotification";
 import { Button } from "./ui/button";
-import { RotateCcw, PartyPopper, Sparkles } from "lucide-react";
+import { RotateCcw, PartyPopper, Sparkles, LogOut } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { usePusher } from "@/hooks/usePusher";
+import { UserRole } from "@/types";
 
-export function GameBoard() {
+interface GameBoardProps {
+  role: UserRole;
+  playerId: string | null;
+}
+
+export function GameBoard({ role, playerId }: GameBoardProps) {
+  const router = useRouter();
   const gameState = useGameStore();
   const [showReveal, setShowReveal] = useState(false);
   const lastShownDrawerIdRef = useRef<string | null>(null);
@@ -26,6 +36,17 @@ export function GameBoard() {
 
   const playerStates = getPlayerStates(gameState);
   const currentDrawer = getCurrentDrawer(gameState);
+  
+  // Determine if current user can interact
+  const isAdmin = role === "admin";
+  const isCurrentDrawer = currentDrawer?.id === playerId;
+  const canInteract = isAdmin || isCurrentDrawer;
+  
+  // Get player info for display
+  const playerInfo = playerId ? getMemberById(playerId) : null;
+  const playerPosition = playerId
+    ? familyConfig.drawOrder.indexOf(playerId) + 1
+    : undefined;
 
   // Calculate available and drawn members for pool display
   const availableMembers = familyConfig.members.filter((m) =>
@@ -37,11 +58,17 @@ export function GameBoard() {
 
   // Handle starting a new turn
   const handleStartTurn = () => {
+    if (!canInteract) {
+      return;
+    }
     gameState.prepareOptions();
   };
 
   // Handle player selection
   const handleSelection = (index: number) => {
+    if (!canInteract) {
+      return;
+    }
     console.log('🎁 Player selected box:', index);
     gameState.makeSelection(index);
   };
@@ -55,6 +82,16 @@ export function GameBoard() {
       console.log('🧹 Clearing lastDrawResult');
       gameState.setLastDrawResult(null);
     }, 100);
+  };
+  
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/session/logout", { method: "POST" });
+      router.push("/identify");
+    } catch (err) {
+      console.error("Error logging out:", err);
+    }
   };
 
   // Show reveal animation when we have a new draw result
@@ -110,13 +147,39 @@ export function GameBoard() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center space-y-2 sm:space-y-4 mb-6 sm:mb-8">
-          <h1 className="text-4xl sm:text-6xl font-bold text-primary flex items-center justify-center gap-3">
-            <Gift className="w-10 h-10 sm:w-14 sm:h-14" />
-            Secret Santa
-          </h1>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex-1" />
+            <h1 className="text-4xl sm:text-6xl font-bold text-primary flex items-center gap-3 flex-1 justify-center">
+              <Gift className="w-10 h-10 sm:w-14 sm:h-14" />
+              Secret Santa
+            </h1>
+            <div className="flex-1 flex justify-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </Button>
+            </div>
+          </div>
           <p className="text-lg sm:text-xl text-muted-foreground">
             Family Gift Exchange
           </p>
+          {/* Role indicator */}
+          <div className="flex items-center justify-center gap-2 text-sm">
+            {isAdmin ? (
+              <span className="px-3 py-1 bg-purple-500 text-white rounded-full font-semibold">
+                👑 Admin
+              </span>
+            ) : playerInfo ? (
+              <span className="px-3 py-1 bg-blue-500 text-white rounded-full">
+                👤 {playerInfo.name}
+              </span>
+            ) : null}
+          </div>
         </div>
 
         {/* Error message */}
@@ -147,6 +210,21 @@ export function GameBoard() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             {/* Left column: Main game flow (2/3 width on desktop) */}
             <div className="lg:col-span-2 space-y-6">
+              {/* Show "It's your turn!" notification for current drawer */}
+              {gameState.selectionPhase === 'waiting' && isCurrentDrawer && currentDrawer && !showReveal && (
+                <YourTurnNotification playerName={currentDrawer.name} />
+              )}
+              
+              {/* Show waiting state for non-current players */}
+              {gameState.selectionPhase === 'waiting' && !isCurrentDrawer && !isAdmin && currentDrawer && !showReveal && (
+                <WaitingForTurn
+                  currentDrawerName={currentDrawer.name}
+                  playerName={playerInfo?.name}
+                  position={playerPosition}
+                  total={familyConfig.drawOrder.length}
+                />
+              )}
+              
               {/* Waiting phase: Show narrative prompt and start button */}
               {gameState.selectionPhase === 'waiting' && currentDrawer && !showReveal && (
                 <div className="space-y-6">
@@ -157,26 +235,35 @@ export function GameBoard() {
                     totalDrawers={familyConfig.drawOrder.length}
                   />
                   
-                  <div className="flex justify-center">
-                    <Button
-                      size="lg"
-                      onClick={handleStartTurn}
-                      className="min-w-[250px] shadow-lg hover:shadow-xl transition-all text-lg py-6"
-                    >
-                      <Sparkles className="w-6 h-6 mr-2" />
-                      Start {currentDrawer.name}&apos;s Turn
-                    </Button>
-                  </div>
+                  {canInteract && (
+                    <div className="flex justify-center">
+                      <Button
+                        size="lg"
+                        onClick={handleStartTurn}
+                        className="min-w-[250px] shadow-lg hover:shadow-xl transition-all text-lg py-6"
+                      >
+                        <Sparkles className="w-6 h-6 mr-2" />
+                        Start {currentDrawer.name}&apos;s Turn
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* Selecting phase: Show mystery boxes */}
               {gameState.selectionPhase === 'selecting' && currentDrawer && (
                 <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl p-6 sm:p-8">
+                  {!canInteract && (
+                    <div className="mb-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 text-center">
+                      <p className="text-blue-700 dark:text-blue-300 font-medium">
+                        Waiting for <span className="font-bold">{currentDrawer.name}</span> to make their selection...
+                      </p>
+                    </div>
+                  )}
                   <MysterySelector
                     ref={mysterySelectorRef}
                     optionCount={gameState.currentOptions.length}
-                    onSelect={handleSelection}
+                    onSelect={canInteract ? handleSelection : () => {}}
                     currentDrawerName={currentDrawer.name}
                   />
                 </div>
@@ -230,14 +317,16 @@ export function GameBoard() {
                 </div>
               </div>
 
-              {/* Quick draw all button */}
-              <div className="flex justify-center pt-4">
-                <QuickDrawAllButton
-                  onClick={handleQuickDrawAll}
-                  disabled={gameState.isComplete}
-                  currentDrawerIndex={gameState.currentDrawerIndex}
-                />
-              </div>
+              {/* Quick draw all button (admin only) */}
+              {isAdmin && (
+                <div className="flex justify-center pt-4">
+                  <QuickDrawAllButton
+                    onClick={handleQuickDrawAll}
+                    disabled={gameState.isComplete}
+                    currentDrawerIndex={gameState.currentDrawerIndex}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Right column: Pool display (1/3 width on desktop, hidden on mobile) */}
@@ -252,17 +341,19 @@ export function GameBoard() {
           </div>
         )}
 
-        {/* Reset button */}
-        <div className="flex justify-center pt-4">
-          <Button
-            variant="outline"
-            onClick={handleReset}
-            className="gap-2"
-          >
-            <RotateCcw className="w-4 h-4" />
-            Reset Game
-          </Button>
-        </div>
+        {/* Reset button (admin only) */}
+        {isAdmin && (
+          <div className="flex justify-center pt-4">
+            <Button
+              variant="outline"
+              onClick={handleReset}
+              className="gap-2"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Reset Game
+            </Button>
+          </div>
+        )}
 
         {/* Reveal animation overlay */}
         {showReveal && gameState.lastDrawResult && (
