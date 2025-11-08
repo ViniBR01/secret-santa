@@ -17,6 +17,7 @@ import { RotateCcw, PartyPopper, Sparkles, LogOut } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { usePusher } from "@/hooks/usePusher";
+import { useHeartbeat } from "@/hooks/useHeartbeat";
 import { UserRole } from "@/types";
 
 interface GameBoardProps {
@@ -33,6 +34,9 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
 
   // Set up Pusher for real-time sync
   usePusher();
+  
+  // Set up heartbeat for players (not for admin)
+  useHeartbeat({ enabled: role === "player" && !!playerId });
 
   const playerStates = getPlayerStates(gameState);
   const currentDrawer = getCurrentDrawer(gameState);
