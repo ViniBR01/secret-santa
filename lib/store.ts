@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { GameState, DrawResult } from "@/types";
+import { GameState, DrawResult, PlayerSession } from "@/types";
 import {
   initializeGame,
   executeDraw,
@@ -21,6 +21,11 @@ interface GameStore extends GameState {
   setGameState: (state: GameState) => void;
   setLastDrawResult: (result: DrawResult | null) => void;
   resetGame: () => void;
+  
+  // Session management actions
+  updatePlayerSession: (playerId: string, session: PlayerSession) => void;
+  removePlayerSession: (playerId: string) => void;
+  setAdmin: (adminId: string) => void;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -306,6 +311,30 @@ export const useGameStore = create<GameStore>((set, get) => ({
         error: null,
       });
     }
+  },
+
+  // Update player session (when player connects)
+  updatePlayerSession: (playerId: string, session: PlayerSession) => {
+    set((state) => ({
+      activePlayerSessions: {
+        ...state.activePlayerSessions,
+        [playerId]: session,
+      },
+    }));
+  },
+
+  // Remove player session (when player disconnects)
+  removePlayerSession: (playerId: string) => {
+    set((state) => {
+      const newSessions = { ...state.activePlayerSessions };
+      delete newSessions[playerId];
+      return { activePlayerSessions: newSessions };
+    });
+  },
+
+  // Set admin ID
+  setAdmin: (adminId: string) => {
+    set({ adminId });
   },
 }));
 

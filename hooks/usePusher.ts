@@ -3,12 +3,15 @@
 import { useEffect } from "react";
 import { getPusherClient, PUSHER_CHANNEL, PUSHER_EVENTS } from "@/lib/pusher";
 import { useGameStore } from "@/lib/store";
-import { DrawResult, GameState } from "@/types";
+import { DrawResult, GameState, PlayerSession } from "@/types";
 
 export function usePusher() {
   const setGameState = useGameStore((state) => state.setGameState);
   const setLastDrawResult = useGameStore((state) => state.setLastDrawResult);
   const resetGame = useGameStore((state) => state.resetGame);
+  const updatePlayerSession = useGameStore((state) => state.updatePlayerSession);
+  const removePlayerSession = useGameStore((state) => state.removePlayerSession);
+  const setAdmin = useGameStore((state) => state.setAdmin);
 
   useEffect(() => {
     // Only run on client side
@@ -69,10 +72,40 @@ export function usePusher() {
       setGameState(data);
     });
 
+    // Listen for player connection events
+    channel.bind(
+      PUSHER_EVENTS.PLAYER_CONNECTED,
+      (data: { playerId: string; playerName: string; timestamp: number }) => {
+        const session: PlayerSession = {
+          playerId: data.playerId,
+          connectedAt: data.timestamp,
+          lastSeen: data.timestamp,
+          isOnline: true,
+        };
+        updatePlayerSession(data.playerId, session);
+      }
+    );
+
+    // Listen for player disconnection events
+    channel.bind(
+      PUSHER_EVENTS.PLAYER_DISCONNECTED,
+      (data: { playerId: string }) => {
+        removePlayerSession(data.playerId);
+      }
+    );
+
+    // Listen for admin set events
+    channel.bind(
+      PUSHER_EVENTS.ADMIN_SET,
+      (data: { adminId: string }) => {
+        setAdmin(data.adminId);
+      }
+    );
+
     return () => {
       channel.unbind_all();
       channel.unsubscribe();
     };
-  }, [setGameState, setLastDrawResult, resetGame]);
+  }, [setGameState, setLastDrawResult, resetGame, updatePlayerSession, removePlayerSession, setAdmin]);
 }
 
