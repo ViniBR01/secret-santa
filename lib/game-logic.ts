@@ -45,6 +45,9 @@ export function initializeGame(): GameState {
     selectionPhase: 'waiting',
     currentOptions: [],
     selectedIndex: null,
+    activePlayerSessions: {},
+    adminId: null,
+    turnLocked: false,
   };
 }
 

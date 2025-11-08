@@ -19,16 +19,36 @@ export interface DrawOrder {
 
 export type SelectionPhase = 'waiting' | 'selecting' | 'revealing' | 'complete';
 
+// Session and role management types
+export type UserRole = 'admin' | 'player' | 'spectator';
+
+export interface PlayerSession {
+  playerId: string;
+  connectedAt: number;
+  lastSeen: number;
+  isOnline: boolean;
+}
+
+export interface SessionData {
+  role: UserRole;
+  playerId?: string; // undefined for admin/spectator
+}
+
 export interface GameState {
   currentDrawerIndex: number;
   assignments: Record<string, string>; // drawerId -> gifteeId
   availableGiftees: string[];
   isComplete: boolean;
   
-  // New fields for interactive selection
+  // Interactive selection fields
   selectionPhase: SelectionPhase;
   currentOptions: string[]; // viable gifteeIds for current drawer
   selectedIndex: number | null;
+  
+  // Session management fields
+  activePlayerSessions: Record<string, PlayerSession>; // playerId -> session
+  adminId: string | null;
+  turnLocked: boolean; // prevents simultaneous selections
 }
 
 export interface FamilyConfig {
