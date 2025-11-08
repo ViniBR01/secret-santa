@@ -187,8 +187,20 @@ export function canGameBeCompleted(gameState: GameState): boolean {
 }
 
 /**
+ * Shuffle an array using Fisher-Yates algorithm
+ */
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+/**
  * Prepare draw options for the current drawer
- * Returns all viable options that lead to a completable game
+ * Returns all viable options that lead to a completable game (randomized order)
  */
 export function prepareDrawOptions(gameState: GameState): DrawOptions | null {
   const { currentDrawerIndex, availableGiftees, assignments } = gameState;
@@ -222,9 +234,12 @@ export function prepareDrawOptions(gameState: GameState): DrawOptions | null {
   // If no viable options, fall back to any valid option
   const optionsToUse = viableOptions.length > 0 ? viableOptions : validOptions;
 
+  // Shuffle the options so the mystery box placement is randomized
+  const shuffledOptions = shuffleArray(optionsToUse);
+
   return {
     drawerId,
-    viableGifteeIds: optionsToUse,
+    viableGifteeIds: shuffledOptions,
   };
 }
 
