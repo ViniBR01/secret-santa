@@ -13,6 +13,10 @@ A modern web application to automate your family Secret Santa gift exchange with
 - ✅ **Live pool display** - See who's still available and who's been drawn in real-time
 - ✅ **Mobile-friendly** - Beautiful responsive UI optimized for all devices
 - ✅ **Local-only mode** - Works without Pusher configuration for single-device use
+- ✅ **Role-based access control** - Admin and player roles with session management
+- ✅ **Turn locking** - Only the current drawer can make selections (server-side validation)
+- ✅ **Connection tracking** - See which players are online/offline in real-time
+- ✅ **Admin controls** - Skip turns, draw for absent players, and full game management
 
 ## Getting Started
 
@@ -67,25 +71,41 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### 5. Share with Family
 
-If using Pusher, all family members can join by opening the same URL on their devices. The draws will sync in real-time!
+**For Admin:**
+- Access the game with the admin URL: `http://localhost:3000?admin=<your-secret-code>`
+- Replace `<your-secret-code>` with your `ADMIN_SECRET_CODE` from `.env.local`
+- You'll have full control and see the admin panel
+
+**For Players:**
+- Share the regular URL: `http://localhost:3000`
+- Players select their name on the landing page
+- They can only interact during their turn
+- All players see real-time updates
+
+If using Pusher, all family members can join on their own devices and everything syncs in real-time!
 
 ## How It Works
 
-1. **Setup** - Family structure is pre-configured in `lib/family-config.ts`
-2. **Turn Announcement** - Each person's turn is announced with festive narrative prompts
-3. **Mystery Selection** - The current player sees 2-5 mystery gift boxes (depending on valid options)
-4. **Choice** - Player clicks one mystery box to make their selection
-5. **Suspense Build-up** - Dramatic animation sequence:
+1. **Player Login** - Each family member selects their name on the landing page
+2. **Admin Access** - Admin joins via URL with secret code for full control
+3. **Turn Announcement** - Each person's turn is announced with festive narrative prompts
+4. **Turn Control** - Only the current drawer (or admin) can start their turn
+5. **Mystery Selection** - The current player sees 2-5 mystery gift boxes (depending on valid options)
+6. **Choice** - Player clicks one mystery box to make their selection (server validates it's their turn)
+7. **Suspense Build-up** - Dramatic animation sequence:
    - Opening mystery gift...
    - Box opening animation
    - Big reveal with confetti!
-6. **Validation** - The app automatically ensures using backtracking algorithm:
+8. **Validation** - The app automatically ensures using backtracking algorithm:
    - No one draws themselves
    - No one draws someone in their own clic
    - Every choice leads to a completable game
-7. **Pool Tracking** - Sidebar shows remaining available people and who's been drawn
-8. **Real-time Sync** - When someone makes a selection, everyone sees it happen simultaneously
-9. **Next Turn** - Automatic progression to the next person in the draw order
+   - Server-side validation prevents unauthorized actions
+9. **Pool Tracking** - Sidebar shows remaining available people and who's been drawn
+10. **Real-time Sync** - When someone makes a selection, everyone sees it happen simultaneously
+11. **Connection Status** - Admin sees which players are online/offline
+12. **Admin Controls** - Admin can skip turns or draw for absent players if needed
+13. **Next Turn** - Automatic progression to the next person in the draw order
 
 ## Deployment
 
@@ -101,42 +121,58 @@ Vercel will automatically build and deploy your app. Share the generated URL wit
 ### Environment Variables for Production
 
 In Vercel dashboard, add:
-- `NEXT_PUBLIC_PUSHER_KEY`
-- `NEXT_PUBLIC_PUSHER_CLUSTER`
-- `PUSHER_APP_ID`
-- `PUSHER_SECRET`
+- `NEXT_PUBLIC_PUSHER_KEY` - Your Pusher app key
+- `NEXT_PUBLIC_PUSHER_CLUSTER` - Your Pusher cluster (e.g., us2)
+- `PUSHER_APP_ID` - Your Pusher app ID
+- `PUSHER_SECRET` - Your Pusher secret key
+- `ADMIN_SECRET_CODE` - Your secret code for admin access (e.g., family-secret-2025)
 
 ## Project Structure
 
 ```
 secret-santa/
 ├── app/
-│   ├── layout.tsx                  # Root layout
-│   ├── page.tsx                    # Main game screen
+│   ├── layout.tsx                        # Root layout
+│   ├── page.tsx                          # Main game screen with session check
+│   ├── identify/page.tsx                 # Player identity selection page
 │   └── api/
+│       ├── session/
+│       │   ├── identify/route.ts         # Player login
+│       │   ├── admin/route.ts            # Admin login
+│       │   ├── status/route.ts           # Check session
+│       │   ├── logout/route.ts           # Logout
+│       │   └── heartbeat/route.ts        # Connection tracking
 │       ├── draw/
-│       │   ├── route.ts           # Legacy draw endpoint
-│       │   ├── options/route.ts   # Prepare selection options
-│       │   └── select/route.ts    # Finalize player selection
-│       └── state/route.ts         # Game state sync endpoint
+│       │   ├── options/route.ts          # Prepare selection options (authenticated)
+│       │   └── select/route.ts           # Finalize player selection (authenticated)
+│       ├── admin/
+│       │   ├── skip-turn/route.ts        # Skip player's turn
+│       │   └── draw-for-player/route.ts  # Draw for absent player
+│       └── state/route.ts                # Game state sync endpoint
 ├── components/
-│   ├── GameBoard.tsx              # Main game orchestrator
-│   ├── MysterySelector.tsx        # Interactive gift box selection
-│   ├── NarrativePrompt.tsx        # Story-driven turn announcements
-│   ├── PoolDisplay.tsx            # Live available/drawn players sidebar
-│   ├── RevealAnimation.tsx        # Multi-stage reveal with confetti
-│   ├── PlayerCard.tsx             # Individual player status
-│   ├── DrawButton.tsx             # Draw action button
-│   └── QuickDrawAllButton.tsx     # Auto-complete remaining draws
+│   ├── GameBoard.tsx                     # Main game orchestrator with role logic
+│   ├── MysterySelector.tsx               # Interactive gift box selection
+│   ├── NarrativePrompt.tsx               # Story-driven turn announcements
+│   ├── WaitingForTurn.tsx                # Waiting state for non-current players
+│   ├── YourTurnNotification.tsx          # Turn notification for current drawer
+│   ├── AdminPanel.tsx                    # Admin control panel (floating)
+│   ├── AdminDrawForPlayer.tsx            # Admin draw dialog
+│   ├── PlayerConnectionStatus.tsx        # Online/offline player status
+│   ├── PoolDisplay.tsx                   # Live available/drawn players sidebar
+│   ├── RevealAnimation.tsx               # Multi-stage reveal with confetti
+│   ├── PlayerCard.tsx                    # Individual player status
+│   └── ResultsDisplay.tsx                # Final results display
 ├── lib/
-│   ├── game-logic.ts              # Selection algorithm & backtracking
-│   ├── pusher.ts                  # Pusher client/server setup
-│   ├── family-config.ts           # Family structure data
-│   └── store.ts                   # State management (Zustand)
+│   ├── game-logic.ts                     # Selection algorithm & backtracking
+│   ├── session.ts                        # Session validation & cookie handling
+│   ├── pusher.ts                         # Pusher client/server setup
+│   ├── family-config.ts                  # Family structure data
+│   └── store.ts                          # State management (Zustand)
 ├── hooks/
-│   └── usePusher.ts               # Real-time sync hook
+│   ├── usePusher.ts                      # Real-time sync hook
+│   └── useHeartbeat.ts                   # Connection heartbeat hook
 └── types/
-    └── index.ts                   # TypeScript interfaces
+    └── index.ts                          # TypeScript interfaces
 ```
 
 ## Tech Stack
@@ -188,6 +224,28 @@ See `PLAN.md` for future enhancement ideas!
 - No! That's the mystery element
 - Players only see numbered gift boxes
 - They can see the list of remaining people in the sidebar, but not which box contains whom
+
+**Q: How do I access the admin panel?**
+- Add `?admin=<your-secret-code>` to the URL
+- Example: `http://localhost:3000?admin=family-secret-2025`
+- Use the secret code from your `ADMIN_SECRET_CODE` environment variable
+- Admin sees a floating purple panel in the bottom-right
+
+**Q: What happens if a player disconnects?**
+- Their status shows as offline in the admin panel
+- Admin can skip their turn or draw for them using admin controls
+- When they reconnect, they'll see the updated game state
+
+**Q: Can someone cheat and select when it's not their turn?**
+- No! Server-side validation prevents unauthorized actions
+- Only the current drawer (or admin) can make selections
+- Attempts to act out of turn are rejected with a 403 error
+
+**Q: How does the admin "Draw for Player" feature work?**
+- Click the "Draw for Player" button in the admin panel during selection phase
+- Select one of the mystery boxes on behalf of the absent player
+- The selection is made as if the player did it themselves
+- Everyone sees the reveal animation normally
 
 ## License
 
