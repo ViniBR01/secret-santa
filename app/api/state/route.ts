@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pusherServer, PUSHER_CHANNEL, PUSHER_EVENTS } from "@/lib/pusher";
 import { GameState } from "@/types";
+import { getSession } from "@/lib/session";
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,6 +26,16 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE() {
   try {
+    // Validate admin session for reset
+    const session = await getSession();
+    
+    if (!session || session.role !== "admin") {
+      return NextResponse.json(
+        { error: "Forbidden: Admin access required" },
+        { status: 403 }
+      );
+    }
+
     // Broadcast game reset to all connected clients
     await pusherServer.trigger(PUSHER_CHANNEL, PUSHER_EVENTS.GAME_RESET, {});
 
