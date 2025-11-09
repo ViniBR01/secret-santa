@@ -5,7 +5,6 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import {
   Shield,
-  SkipForward,
   ChevronDown,
   ChevronUp,
   Users,
@@ -18,14 +17,12 @@ import { GameState } from "@/types";
 
 interface AdminPanelProps {
   gameState: GameState;
-  onSkipTurn: () => void;
   onDrawForPlayer: () => void;
   currentPlayerId?: string | null;
 }
 
 export function AdminPanel({
   gameState,
-  onSkipTurn,
   onDrawForPlayer,
   currentPlayerId,
 }: AdminPanelProps) {
@@ -42,12 +39,12 @@ export function AdminPanel({
   const completedDraws = gameState.currentDrawerIndex;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-80 max-w-[calc(100vw-2rem)]">
-      <Card className="bg-purple-50 dark:bg-purple-950/50 border-2 border-purple-300 dark:border-purple-700">
+    <div className="fixed bottom-4 right-4 z-50 w-80 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)] flex flex-col">
+      <Card className="bg-purple-50 dark:bg-purple-950/50 border-2 border-purple-300 dark:border-purple-700 flex flex-col overflow-hidden">
         {/* Header */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full p-4 flex items-center justify-between hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors rounded-t-lg"
+          className="w-full p-4 flex items-center justify-between hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors rounded-t-lg flex-shrink-0"
         >
           <div className="flex items-center gap-2">
             <Shield className="w-5 h-5 text-purple-600 dark:text-purple-400" />
@@ -64,7 +61,7 @@ export function AdminPanel({
 
         {/* Content */}
         {isExpanded && (
-          <div className="p-4 space-y-4 border-t border-purple-200 dark:border-purple-800">
+          <div className="flex-1 min-h-0 p-4 space-y-4 border-t border-purple-200 dark:border-purple-800 overflow-y-auto">
             {/* Stats */}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-white dark:bg-slate-900 rounded-lg p-3 border border-purple-200 dark:border-purple-800">
@@ -109,17 +106,6 @@ export function AdminPanel({
                 Admin Actions
               </h4>
               
-              <Button
-                onClick={onSkipTurn}
-                disabled={gameState.isComplete}
-                variant="outline"
-                size="sm"
-                className="w-full gap-2 border-orange-300 hover:bg-orange-50 dark:border-orange-700 dark:hover:bg-orange-950/30"
-              >
-                <SkipForward className="w-4 h-4" />
-                Skip Current Turn
-              </Button>
-
               <Button
                 onClick={onDrawForPlayer}
                 disabled={gameState.isComplete || gameState.selectionPhase !== 'selecting'}

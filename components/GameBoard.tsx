@@ -104,34 +104,6 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
     }
   };
   
-  // Admin action: Skip turn
-  const handleAdminSkipTurn = async () => {
-    if (!confirm(`Skip ${currentDrawer?.name}'s turn? This cannot be undone.`)) {
-      return;
-    }
-    
-    try {
-      const response = await fetch("/api/admin/skip-turn", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ gameState }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        alert(`Failed to skip turn: ${error.error}`);
-        return;
-      }
-
-      const data = await response.json();
-      console.log("Turn skipped:", data.message);
-      // State will be updated via Pusher
-    } catch (err) {
-      console.error("Error skipping turn:", err);
-      alert("Failed to skip turn. Please try again.");
-    }
-  };
-  
   // Admin action: Draw for player
   const handleAdminDrawForPlayer = () => {
     if (gameState.selectionPhase !== 'selecting') {
@@ -438,7 +410,6 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
         {isAdmin && (
           <AdminPanel
             gameState={gameState}
-            onSkipTurn={handleAdminSkipTurn}
             onDrawForPlayer={handleAdminDrawForPlayer}
             currentPlayerId={playerId}
           />
