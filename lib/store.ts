@@ -23,7 +23,8 @@ interface GameStore extends GameState {
   quickDrawAll: () => Promise<void>;
   setGameState: (state: GameState) => void;
   setLastDrawResult: (result: DrawResult | null) => void;
-  resetGame: () => void;
+  resetGameLocal: () => void; // Reset game state locally without API call
+  resetGame: () => Promise<void>; // Reset game and broadcast to all clients
   setPusherReady: (ready: boolean) => void;
   
   // Session management actions
@@ -532,7 +533,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({ lastDrawResult: result });
   },
 
-  // Reset game
+  // Reset game locally (without API call)
+  resetGameLocal: () => {
+    console.log("🔄 Resetting game state locally...");
+    const initialState = initializeGame();
+    set({
+      ...initialState,
+      lastDrawResult: null,
+      error: null,
+      isGameReady: true,
+    });
+  },
+
+  // Reset game (triggers server broadcast)
   resetGame: async () => {
     try {
       // Check if Pusher is configured
@@ -541,29 +554,20 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       if (usePusher) {
         // Call API endpoint to broadcast reset
+        console.log("📡 Calling DELETE /api/state to broadcast reset...");
         await fetch("/api/state", {
           method: "DELETE",
         });
+        // Don't reset locally here - wait for the GAME_RESET event from Pusher
+        console.log("✅ Reset broadcasted, waiting for Pusher event...");
+      } else {
+        // No Pusher, reset locally only
+        get().resetGameLocal();
       }
-
-      // Reset state locally
-      const initialState = initializeGame();
-      set({
-        ...initialState,
-        lastDrawResult: null,
-        error: null,
-        isGameReady: true,
-      });
     } catch (error) {
       console.error("Error resetting game:", error);
-      // Reset locally even if API call fails
-      const initialState = initializeGame();
-      set({
-        ...initialState,
-        lastDrawResult: null,
-        error: null,
-        isGameReady: true,
-      });
+      // Reset locally if API call fails
+      get().resetGameLocal();
     }
   },
 

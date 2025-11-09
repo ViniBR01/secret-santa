@@ -8,7 +8,7 @@ import { DrawResult, GameState, PlayerSession } from "@/types";
 export function usePusher() {
   const setGameState = useGameStore((state) => state.setGameState);
   const setLastDrawResult = useGameStore((state) => state.setLastDrawResult);
-  const resetGame = useGameStore((state) => state.resetGame);
+  const resetGameLocal = useGameStore((state) => state.resetGameLocal);
   const updatePlayerSession = useGameStore((state) => state.updatePlayerSession);
   const removePlayerSession = useGameStore((state) => state.removePlayerSession);
   const setAdmin = useGameStore((state) => state.setAdmin);
@@ -93,8 +93,8 @@ export function usePusher() {
 
     // Listen for game reset events
     channel.bind(PUSHER_EVENTS.GAME_RESET, () => {
-      console.log("📨 Received GAME_RESET event");
-      resetGame();
+      console.log("📨 Received GAME_RESET event - resetting locally");
+      resetGameLocal();
     });
 
     // Listen for game state updates
@@ -141,6 +141,6 @@ export function usePusher() {
       channel.unbind_all();
       channel.unsubscribe();
     };
-  }, [setGameState, setLastDrawResult, resetGame, updatePlayerSession, removePlayerSession, setAdmin, setPusherReady]);
+  }, [setGameState, setLastDrawResult, resetGameLocal, updatePlayerSession, removePlayerSession, setAdmin, setPusherReady]);
 }
 
