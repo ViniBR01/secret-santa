@@ -4,6 +4,7 @@ import { pusherServer, PUSHER_CHANNEL, PUSHER_EVENTS } from "@/lib/pusher";
 import { finalizeSelection, updateGameStateAfterDraw } from "@/lib/game-logic";
 import { familyConfig, getMemberById } from "@/lib/family-config";
 import { GameState } from "@/types";
+import { setGameState } from "@/lib/server-state";
 
 export async function POST(request: Request) {
   try {
@@ -48,6 +49,9 @@ export async function POST(request: Request) {
       selectedIndex: choiceIndex,
     };
 
+    // Persist the revealing state on the server
+    setGameState(revealingState);
+
     // Broadcast revealing state
     await pusherServer.trigger(PUSHER_CHANNEL, PUSHER_EVENTS.SELECTION_REVEALING, {
       selectedIndex: choiceIndex,
@@ -58,6 +62,9 @@ export async function POST(request: Request) {
     // Update game state after draw and unlock turn
     const newGameState = updateGameStateAfterDraw(gameState, drawResult);
     newGameState.turnLocked = false;
+
+    // Persist the final game state on the server
+    setGameState(newGameState);
 
     // Broadcast turn unlock
     await pusherServer.trigger(PUSHER_CHANNEL, PUSHER_EVENTS.TURN_UNLOCKED, {

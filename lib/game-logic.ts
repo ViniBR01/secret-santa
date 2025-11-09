@@ -164,6 +164,9 @@ export function updateGameStateAfterDraw(
     selectionPhase: isComplete ? 'complete' : 'waiting',
     currentOptions: [],
     selectedIndex: null,
+    activePlayerSessions: gameState.activePlayerSessions,
+    adminId: gameState.adminId,
+    turnLocked: false,
   };
 }
 

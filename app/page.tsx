@@ -10,6 +10,7 @@ export default function Home() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initGame = useGameStore((state) => state.initGame);
+  const isGameReady = useGameStore((state) => state.isGameReady);
   
   const [sessionChecked, setSessionChecked] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -71,18 +72,33 @@ export default function Home() {
 
   useEffect(() => {
     // Initialize game once session is confirmed
-    if (sessionChecked && isAuthenticated) {
-      initGame();
-    }
-  }, [sessionChecked, isAuthenticated, initGame]);
+    // Check isGameReady from store - it persists across hot reloads
+    const initialize = async () => {
+      if (sessionChecked && isAuthenticated && !isGameReady) {
+        console.log("🎮 Starting game initialization...");
+        try {
+          await initGame();
+          console.log("✅ Game initialization complete");
+        } catch (error) {
+          console.error("❌ Game initialization failed:", error);
+        }
+      }
+    };
+    
+    initialize();
+    // Note: initGame is intentionally NOT in deps to prevent re-initialization
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionChecked, isAuthenticated, isGameReady]);
 
-  // Show loading state while checking session
-  if (!sessionChecked || !isAuthenticated) {
+  // Show loading state while checking session and initializing game
+  if (!sessionChecked || !isAuthenticated || !isGameReady) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-green-50 dark:from-red-950 dark:via-background dark:to-green-950 flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">
+            {!sessionChecked ? "Checking session..." : !isGameReady ? "Loading game state..." : "Loading..."}
+          </p>
         </div>
       </div>
     );

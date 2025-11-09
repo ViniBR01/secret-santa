@@ -25,6 +25,15 @@ export const getPusherClient = () => {
   return pusherClient;
 };
 
+// Reset Pusher client (used on logout to ensure fresh connection)
+export const resetPusherClient = () => {
+  if (pusherClient) {
+    console.log("🔌 Disconnecting Pusher client");
+    pusherClient.disconnect();
+    pusherClient = null;
+  }
+};
+
 // Event names
 export const PUSHER_EVENTS = {
   DRAW_EXECUTED: "draw-executed",

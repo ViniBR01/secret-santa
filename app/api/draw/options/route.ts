@@ -4,6 +4,7 @@ import { prepareDrawOptions } from "@/lib/game-logic";
 import { familyConfig } from "@/lib/family-config";
 import { GameState } from "@/types";
 import { getSessionFromRequest } from "@/lib/session";
+import { setGameState } from "@/lib/server-state";
 
 export async function POST(request: NextRequest) {
   try {
@@ -55,6 +56,9 @@ export async function POST(request: NextRequest) {
       selectedIndex: null,
       turnLocked: true,
     };
+
+    // Persist the updated game state on the server
+    setGameState(updatedState);
 
     // Broadcast turn lock
     await pusherServer.trigger(PUSHER_CHANNEL, PUSHER_EVENTS.TURN_LOCKED, {

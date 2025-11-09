@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { pusherServer, PUSHER_CHANNEL, PUSHER_EVENTS } from "@/lib/pusher";
 import { executeDraw, updateGameStateAfterDraw } from "@/lib/game-logic";
 import { GameState } from "@/types";
+import { setGameState } from "@/lib/server-state";
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,6 +20,9 @@ export async function POST(request: NextRequest) {
 
     // Update game state
     const newGameState = updateGameStateAfterDraw(gameState, drawResult);
+
+    // Persist the new game state on the server
+    setGameState(newGameState);
 
     // Broadcast the draw result to all connected clients
     await pusherServer.trigger(PUSHER_CHANNEL, PUSHER_EVENTS.DRAW_EXECUTED, {

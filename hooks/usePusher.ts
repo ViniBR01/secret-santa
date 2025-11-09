@@ -12,6 +12,7 @@ export function usePusher() {
   const updatePlayerSession = useGameStore((state) => state.updatePlayerSession);
   const removePlayerSession = useGameStore((state) => state.removePlayerSession);
   const setAdmin = useGameStore((state) => state.setAdmin);
+  const setPusherReady = useGameStore((state) => state.setPusherReady);
 
   useEffect(() => {
     // Only run on client side
@@ -24,13 +25,33 @@ export function usePusher() {
       return;
     }
 
+    console.log("🔌 Initializing Pusher client...");
     const pusher = getPusherClient();
+    
+    // Listen for connection state changes
+    pusher.connection.bind('state_change', (states: any) => {
+      console.log(`🔌 Pusher connection state: ${states.previous} → ${states.current}`);
+    });
+
+    console.log(`🔌 Subscribing to channel: ${PUSHER_CHANNEL}`);
     const channel = pusher.subscribe(PUSHER_CHANNEL);
+    
+    // Wait for successful subscription
+    channel.bind('pusher:subscription_succeeded', () => {
+      console.log('✅ Pusher subscription successful');
+      setPusherReady(true);
+    });
+    
+    channel.bind('pusher:subscription_error', (error: any) => {
+      console.error('❌ Pusher subscription error:', error);
+      setPusherReady(false);
+    });
 
     // Listen for options prepared events
     channel.bind(
       PUSHER_EVENTS.OPTIONS_PREPARED,
       (data: { newGameState: GameState }) => {
+        console.log("📨 Received OPTIONS_PREPARED event");
         setGameState(data.newGameState);
       }
     );
@@ -39,6 +60,7 @@ export function usePusher() {
     channel.bind(
       PUSHER_EVENTS.SELECTION_REVEALING,
       (data: { newGameState: GameState }) => {
+        console.log("📨 Received SELECTION_REVEALING event");
         setGameState(data.newGameState);
       }
     );
@@ -47,6 +69,7 @@ export function usePusher() {
     channel.bind(
       PUSHER_EVENTS.DRAW_EXECUTED,
       (data: { drawResult: DrawResult; newGameState: GameState }) => {
+        console.log("📨 Received DRAW_EXECUTED event");
         // Update state and lastDrawResult atomically by merging them
         setGameState({
           ...data.newGameState,
@@ -64,11 +87,13 @@ export function usePusher() {
 
     // Listen for game reset events
     channel.bind(PUSHER_EVENTS.GAME_RESET, () => {
+      console.log("📨 Received GAME_RESET event");
       resetGame();
     });
 
     // Listen for game state updates
     channel.bind(PUSHER_EVENTS.GAME_STATE_UPDATE, (data: GameState) => {
+      console.log("📨 Received GAME_STATE_UPDATE event");
       setGameState(data);
     });
 
@@ -103,9 +128,11 @@ export function usePusher() {
     );
 
     return () => {
+      console.log("🔌 Cleaning up Pusher subscription");
+      setPusherReady(false);
       channel.unbind_all();
       channel.unsubscribe();
     };
-  }, [setGameState, setLastDrawResult, resetGame, updatePlayerSession, removePlayerSession, setAdmin]);
+  }, [setGameState, setLastDrawResult, resetGame, updatePlayerSession, removePlayerSession, setAdmin, setPusherReady]);
 }
 

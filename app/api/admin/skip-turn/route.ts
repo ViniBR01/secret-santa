@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/session";
 import { pusherServer, PUSHER_CHANNEL, PUSHER_EVENTS } from "@/lib/pusher";
 import { familyConfig } from "@/lib/family-config";
 import { GameState } from "@/types";
+import { setGameState } from "@/lib/server-state";
 
 export async function POST(request: Request) {
   try {
@@ -32,6 +33,9 @@ export async function POST(request: Request) {
       turnLocked: false,
       isComplete: isNowComplete,
     };
+
+    // Persist the updated state on the server
+    setGameState(updatedState);
 
     // Broadcast state update
     await pusherServer.trigger(

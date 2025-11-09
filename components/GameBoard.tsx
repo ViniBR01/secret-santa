@@ -20,6 +20,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { usePusher } from "@/hooks/usePusher";
 import { useHeartbeat } from "@/hooks/useHeartbeat";
+import { resetPusherClient } from "@/lib/pusher";
 import { UserRole } from "@/types";
 
 interface GameBoardProps {
@@ -94,6 +95,8 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
   // Handle logout
   const handleLogout = async () => {
     try {
+      // Reset Pusher client to ensure fresh connection on next login
+      resetPusherClient();
       await fetch("/api/session/logout", { method: "POST" });
       router.push("/identify");
     } catch (err) {
