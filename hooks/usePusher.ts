@@ -16,17 +16,23 @@ export function usePusher() {
 
   useEffect(() => {
     // Only run on client side
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined") {
+      console.log("⚠️ usePusher: Not on client side, skipping");
+      return;
+    }
 
     // Check if Pusher credentials are configured
     const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY;
+    console.log("🔍 DEBUG - Pusher key check:", pusherKey ? "Present" : "Missing");
+    
     if (!pusherKey || pusherKey === "your_pusher_key_here") {
-      console.log("Pusher not configured, running in local-only mode");
+      console.log("⚠️ Pusher not configured, running in local-only mode");
       return;
     }
 
     console.log("🔌 Initializing Pusher client...");
     const pusher = getPusherClient();
+    console.log("🔍 DEBUG - Pusher client created:", pusher);
     
     // Listen for connection state changes
     pusher.connection.bind('state_change', (states: any) => {
@@ -94,6 +100,8 @@ export function usePusher() {
     // Listen for game state updates
     channel.bind(PUSHER_EVENTS.GAME_STATE_UPDATE, (data: GameState) => {
       console.log("📨 Received GAME_STATE_UPDATE event");
+      console.log("🔍 DEBUG - GAME_STATE_UPDATE data:", data); // DEBUG: Log full data
+      console.log("🔍 DEBUG - gameLifecycle in update:", data.gameLifecycle); // DEBUG: Log lifecycle specifically
       setGameState(data);
     });
 

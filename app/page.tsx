@@ -3,19 +3,37 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GameBoard } from "@/components/GameBoard";
+import { WaitingForGameStart } from "@/components/WaitingForGameStart";
+import { AdminStartGame } from "@/components/AdminStartGame";
 import { useGameStore } from "@/lib/store";
 import { UserRole } from "@/types";
+import { getMemberById } from "@/lib/family-config";
+import { usePusher } from "@/hooks/usePusher";
 
 export default function Home() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initGame = useGameStore((state) => state.initGame);
   const isGameReady = useGameStore((state) => state.isGameReady);
+  const gameLifecycle = useGameStore((state) => state.gameLifecycle);
   
   const [sessionChecked, setSessionChecked] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [playerId, setPlayerId] = useState<string | null>(null);
+
+  // Set up Pusher at the top level so it persists across component transitions
+  usePusher();
+
+  // DEBUG: Log when component renders and what gameLifecycle value is
+  console.log("🎯 Home component render:", {
+    sessionChecked,
+    isAuthenticated,
+    isGameReady,
+    gameLifecycle,
+    userRole,
+    playerId
+  });
 
   useEffect(() => {
     const checkSession = async () => {
@@ -104,6 +122,19 @@ export default function Home() {
     );
   }
 
+  // Route based on game lifecycle and user role
+  if (gameLifecycle === 'not_started') {
+    // Game hasn't started yet
+    if (userRole === 'admin') {
+      return <AdminStartGame />;
+    } else {
+      // Player waiting for game to start
+      const playerName = playerId ? getMemberById(playerId)?.name : undefined;
+      return <WaitingForGameStart playerName={playerName} />;
+    }
+  }
+
+  // Game is in progress or completed - show game board
   return <GameBoard role={userRole!} playerId={playerId} />;
 }
 

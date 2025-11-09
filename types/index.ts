@@ -19,6 +19,8 @@ export interface DrawOrder {
 
 export type SelectionPhase = 'waiting' | 'selecting' | 'revealing' | 'complete';
 
+export type GameLifecycle = 'not_started' | 'in_progress' | 'completed';
+
 // Session and role management types
 export type UserRole = 'admin' | 'player' | 'spectator';
 
@@ -39,6 +41,9 @@ export interface GameState {
   assignments: Record<string, string>; // drawerId -> gifteeId
   availableGiftees: string[];
   isComplete: boolean;
+  
+  // Game lifecycle management
+  gameLifecycle: GameLifecycle;
   
   // Interactive selection fields
   selectionPhase: SelectionPhase;

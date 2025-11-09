@@ -16,6 +16,7 @@ interface GameStore extends GameState {
   
   // Actions
   initGame: () => Promise<void>;
+  startGame: () => Promise<void>; // Admin action to start the game
   performDraw: () => void; // Legacy: for backward compatibility
   prepareOptions: () => Promise<void>; // New: prepare options for selection
   makeSelection: (choiceIndex: number) => Promise<void>; // New: finalize selection
@@ -115,6 +116,64 @@ export const useGameStore = create<GameStore>((set, get) => ({
         error: null,
         isGameReady: true,
       });
+    }
+  },
+
+  // Start the game (admin only)
+  startGame: async () => {
+    try {
+      console.log("🚀 Starting game...");
+      
+      // Check if Pusher is configured
+      const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY;
+      const usePusher = pusherKey && pusherKey !== "your_pusher_key_here";
+
+      if (usePusher) {
+        const isPusherReady = get().isPusherReady;
+        
+        if (!isPusherReady) {
+          console.warn("⚠️ Pusher not ready yet, will proceed anyway and fetch state");
+        }
+
+        // Call API endpoint to start game (will broadcast via Pusher)
+        const response = await fetch("/api/admin/start-game", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          set({ error: error.error || "Failed to start game" });
+          return;
+        }
+
+        const result = await response.json();
+        console.log("✅ Game started successfully, received state:", result.gameState);
+
+        // Update state immediately with the response
+        // This ensures the UI updates even if Pusher event is delayed or not ready
+        if (result.gameState) {
+          console.log("🔄 Updating state directly from API response");
+          set({
+            ...result.gameState,
+            isGameReady: true,
+            error: null,
+          });
+        }
+
+        // If Pusher wasn't ready, other clients won't get the update yet
+        // They will get it when Pusher connects, or when they refresh
+        if (!isPusherReady) {
+          console.log("ℹ️ Pusher not ready - other clients will sync when connected");
+        }
+      } else {
+        // Local-only mode: update state directly
+        console.log("🏠 Local-only mode: updating state directly");
+        set({ gameLifecycle: 'in_progress', error: null });
+      }
+    } catch (error) {
+      console.error("Error starting game:", error);
+      set({ error: "Failed to start game. Please try again." });
     }
   },
 
@@ -457,8 +516,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     console.log("📥 Setting game state:", { 
       selectionPhase: state.selectionPhase,
       currentDrawerIndex: state.currentDrawerIndex,
-      hasOptions: state.currentOptions?.length > 0
+      hasOptions: state.currentOptions?.length > 0,
+      gameLifecycle: state.gameLifecycle // DEBUG: Log lifecycle state
     });
+    console.log("🔄 Full state being set:", state); // DEBUG: Log full state
     // Preserve isGameReady flag when updating state
     set({
       ...state,
