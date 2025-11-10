@@ -13,7 +13,7 @@ import { PoolDisplay } from "./PoolDisplay";
 import { WaitingForTurn } from "./WaitingForTurn";
 import { YourTurnNotification } from "./YourTurnNotification";
 import { AdminPanel } from "./AdminPanel";
-import { AdminDrawForPlayer } from "./AdminDrawForPlayer";
+import { AdminSetNextResult } from "./AdminSetNextResult";
 import { Button } from "./ui/button";
 import { RotateCcw, PartyPopper, Sparkles, LogOut } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
@@ -31,7 +31,7 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
   const router = useRouter();
   const gameState = useGameStore();
   const [showReveal, setShowReveal] = useState(false);
-  const [showAdminDrawDialog, setShowAdminDrawDialog] = useState(false);
+  const [showAdminSetResultDialog, setShowAdminSetResultDialog] = useState(false);
   const lastShownDrawerIdRef = useRef<string | null>(null);
   const mysterySelectorRef = useRef<HTMLDivElement>(null);
   
@@ -100,35 +100,35 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
     }
   };
   
-  // Admin action: Draw for player
-  const handleAdminDrawForPlayer = () => {
-    if (gameState.selectionPhase !== 'selecting') {
-      alert("Can only draw for player during selection phase");
+  // Admin action: Set next result
+  const handleAdminSetNextResult = () => {
+    if (gameState.selectionPhase !== 'waiting') {
+      alert("Can only set next result when waiting for turn to start");
       return;
     }
-    setShowAdminDrawDialog(true);
+    setShowAdminSetResultDialog(true);
   };
   
-  // Admin action: Confirm draw for player
-  const handleConfirmAdminDraw = async (choiceIndex: number) => {
+  // Admin action: Confirm set next result
+  const handleConfirmSetNextResult = async (selectedGifteeId: string) => {
     try {
-      const response = await fetch("/api/admin/draw-for-player", {
+      const response = await fetch("/api/admin/set-next-result", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ gameState, choiceIndex }),
+        body: JSON.stringify({ gameState, selectedGifteeId }),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        alert(`Failed to draw for player: ${error.error}`);
+        alert(`Failed to set next result: ${error.error}`);
         return;
       }
 
-      setShowAdminDrawDialog(false);
+      setShowAdminSetResultDialog(false);
       // State will be updated via Pusher
     } catch (err) {
-      console.error("Error drawing for player:", err);
-      alert("Failed to draw for player. Please try again.");
+      console.error("Error setting next result:", err);
+      alert("Failed to set next result. Please try again.");
     }
   };
 
@@ -411,18 +411,18 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
         {isAdmin && (
           <AdminPanel
             gameState={gameState}
-            onDrawForPlayer={handleAdminDrawForPlayer}
+            onSetNextResult={handleAdminSetNextResult}
             currentPlayerId={playerId}
           />
         )}
         
-        {/* Admin Draw for Player Dialog */}
-        {showAdminDrawDialog && currentDrawer && gameState.selectionPhase === 'selecting' && (
-          <AdminDrawForPlayer
+        {/* Admin Set Next Result Dialog */}
+        {showAdminSetResultDialog && currentDrawer && gameState.selectionPhase === 'waiting' && (
+          <AdminSetNextResult
             currentDrawerName={currentDrawer.name}
-            optionCount={gameState.currentOptions.length}
-            onSelect={handleConfirmAdminDraw}
-            onCancel={() => setShowAdminDrawDialog(false)}
+            availableMembers={availableMembers}
+            onSelect={handleConfirmSetNextResult}
+            onCancel={() => setShowAdminSetResultDialog(false)}
           />
         )}
       </div>

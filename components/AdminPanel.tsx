@@ -17,13 +17,13 @@ import { GameState } from "@/types";
 
 interface AdminPanelProps {
   gameState: GameState;
-  onDrawForPlayer: () => void;
+  onSetNextResult: () => void;
   currentPlayerId?: string | null;
 }
 
 export function AdminPanel({
   gameState,
-  onDrawForPlayer,
+  onSetNextResult,
   currentPlayerId,
 }: AdminPanelProps) {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -107,14 +107,14 @@ export function AdminPanel({
               </h4>
               
               <Button
-                onClick={onDrawForPlayer}
-                disabled={gameState.isComplete || gameState.selectionPhase !== 'selecting'}
+                onClick={onSetNextResult}
+                disabled={gameState.isComplete || gameState.selectionPhase !== 'waiting'}
                 variant="outline"
                 size="sm"
                 className="w-full gap-2 border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-950/30"
               >
                 <UserCog className="w-4 h-4" />
-                Draw for Player
+                Set Next Result
               </Button>
             </div>
 
