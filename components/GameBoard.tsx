@@ -266,13 +266,6 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
               {/* Waiting phase: Show narrative prompt and start button */}
               {gameState.selectionPhase === 'waiting' && currentDrawer && !showReveal && (
                 <div className="space-y-6">
-                  <NarrativePrompt
-                    currentDrawerName={currentDrawer.name}
-                    phase="announcement"
-                    drawerOrder={gameState.currentDrawerIndex + 1}
-                    totalDrawers={familyConfig.drawOrder.length}
-                  />
-                  
                   {canInteract && (
                     <div className="flex justify-center">
                       <Button
@@ -285,6 +278,13 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
                       </Button>
                     </div>
                   )}
+                  
+                  <NarrativePrompt
+                    currentDrawerName={currentDrawer.name}
+                    phase="announcement"
+                    drawerOrder={gameState.currentDrawerIndex + 1}
+                    totalDrawers={familyConfig.drawOrder.length}
+                  />
                 </div>
               )}
 
