@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GameBoard } from "@/components/GameBoard";
 import { WaitingForGameStart } from "@/components/WaitingForGameStart";
@@ -10,7 +10,7 @@ import { UserRole } from "@/types";
 import { getMemberById } from "@/lib/family-config";
 import { usePusher } from "@/hooks/usePusher";
 
-export default function Home() {
+function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initGame = useGameStore((state) => state.initGame);
@@ -136,5 +136,22 @@ export default function Home() {
 
   // Game is in progress or completed - show game board
   return <GameBoard role={userRole!} playerId={playerId} />;
+}
+
+export default function Home() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-green-50 dark:from-red-950 dark:via-background dark:to-green-950 flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="text-muted-foreground">Cargando...</p>
+          </div>
+        </div>
+      }
+    >
+      <HomeContent />
+    </Suspense>
+  );
 }
 
