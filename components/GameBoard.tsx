@@ -288,23 +288,28 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
                 </div>
               )}
 
-              {/* Selecting phase: Show mystery boxes */}
+              {/* Selecting phase: Show mystery boxes ONLY to active player/admin */}
               {gameState.selectionPhase === 'selecting' && currentDrawer && (
-                <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl p-6 sm:p-8">
-                  {!canInteract && (
-                    <div className="mb-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 text-center">
-                      <p className="text-blue-700 dark:text-blue-300 font-medium">
-                        Waiting for <span className="font-bold">{currentDrawer.name}</span> to make their selection...
-                      </p>
+                <>
+                  {canInteract ? (
+                    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl p-6 sm:p-8">
+                      <MysterySelector
+                        ref={mysterySelectorRef}
+                        optionCount={gameState.currentOptions.length}
+                        onSelect={handleSelection}
+                        currentDrawerName={currentDrawer.name}
+                      />
                     </div>
+                  ) : (
+                    <WaitingForTurn
+                      currentDrawerName={currentDrawer.name}
+                      playerName={playerInfo?.name}
+                      position={playerPosition}
+                      total={familyConfig.drawOrder.length}
+                      isActivelySelecting={true}
+                    />
                   )}
-                  <MysterySelector
-                    ref={mysterySelectorRef}
-                    optionCount={gameState.currentOptions.length}
-                    onSelect={canInteract ? handleSelection : () => {}}
-                    currentDrawerName={currentDrawer.name}
-                  />
-                </div>
+                </>
               )}
 
               {/* Revealing phase: Show loading state */}
