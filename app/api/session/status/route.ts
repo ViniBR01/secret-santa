@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { getMemberById } from "@/lib/family-config";
 
+// Mark route as dynamic to ensure cookies are read at request time
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const session = await getSession();

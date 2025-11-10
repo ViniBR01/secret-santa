@@ -3,6 +3,9 @@ import { pusherServer, PUSHER_CHANNEL, PUSHER_EVENTS } from "@/lib/pusher";
 import { requireAdmin } from "@/lib/session";
 import { getGameState, setGameState } from "@/lib/server-state";
 
+// Mark route as dynamic to ensure cookies are read at request time
+export const dynamic = 'force-dynamic';
+
 export async function POST() {
   try {
     // Verify admin session

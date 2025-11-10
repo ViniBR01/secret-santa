@@ -6,6 +6,9 @@ import { GameState } from "@/types";
 import { getSessionFromRequest } from "@/lib/session";
 import { setGameState } from "@/lib/server-state";
 
+// Mark route as dynamic to ensure cookies are read at request time
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const { gameState, choiceIndex }: { gameState: GameState; choiceIndex: number } = await request.json();

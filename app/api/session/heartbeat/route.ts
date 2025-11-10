@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { pusherServer, PUSHER_CHANNEL, PUSHER_EVENTS } from "@/lib/pusher";
 
+// Mark route as dynamic to ensure cookies are read at request time
+export const dynamic = 'force-dynamic';
+
 export async function POST() {
   try {
     const session = await getSession();

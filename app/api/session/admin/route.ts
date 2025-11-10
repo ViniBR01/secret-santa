@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { setSessionCookie, verifyAdminCode } from "@/lib/session";
 import { pusherServer, PUSHER_CHANNEL, PUSHER_EVENTS } from "@/lib/pusher";
 
+// Mark route as dynamic to ensure cookies are set at request time
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const { secretCode }: { secretCode: string } = await request.json();

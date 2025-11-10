@@ -6,6 +6,9 @@ import { GameState, DrawResult } from "@/types";
 import { setGameState } from "@/lib/server-state";
 import { updateGameStateAfterDraw, isValidDraw } from "@/lib/game-logic";
 
+// Mark route as dynamic to ensure cookies are read at request time
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     // Verify admin session

@@ -3,6 +3,9 @@ import { setSessionCookie, validatePlayerId } from "@/lib/session";
 import { pusherServer, PUSHER_CHANNEL, PUSHER_EVENTS } from "@/lib/pusher";
 import { getMemberById } from "@/lib/family-config";
 
+// Mark route as dynamic to ensure cookies are set at request time
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const { playerId }: { playerId: string } = await request.json();
