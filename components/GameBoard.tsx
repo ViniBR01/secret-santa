@@ -196,10 +196,10 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
                 variant="ghost"
                 size="sm"
                 onClick={handleLogout}
-                className="gap-2"
+                className="gap-2 whitespace-normal text-center leading-tight h-auto py-2 px-3"
               >
-                <LogOut className="w-4 h-4" />
-                Cambiar Jugador
+                <LogOut className="w-4 h-4 flex-shrink-0" />
+                <span className="max-w-[80px]">Cambiar Jugador</span>
               </Button>
             </div>
           </div>
