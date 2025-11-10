@@ -33,7 +33,7 @@ export default function IdentifyPage() {
     e.preventDefault();
     
     if (!selectedPlayer) {
-      setError("Please select your name");
+      setError("Por favor selecciona tu nombre");
       return;
     }
 
@@ -65,9 +65,9 @@ export default function IdentifyPage() {
       <Card className="w-full max-w-md p-8 space-y-6">
         <div className="text-center space-y-4">
           <Gift className="w-16 h-16 mx-auto text-primary" />
-          <h1 className="text-3xl font-bold text-primary">Secret Santa</h1>
+          <h1 className="text-3xl font-bold text-primary">Intercambio 2025</h1>
           <p className="text-muted-foreground">
-            Welcome to the family gift exchange!
+            ¡Bienvenidos al intercambio familiar de regalos!
           </p>
         </div>
 
@@ -78,7 +78,7 @@ export default function IdentifyPage() {
               className="flex items-center gap-2 text-sm font-medium"
             >
               <Users className="w-4 h-4" />
-              Who are you?
+              ¿Quién eres?
             </label>
             <select
               id="player-select"
@@ -87,7 +87,7 @@ export default function IdentifyPage() {
               className="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               disabled={isLoading}
             >
-              <option value="">Select your name...</option>
+              <option value="">Selecciona tu nombre...</option>
               {familyConfig.members.map((member) => (
                 <option
                   key={member.id}
@@ -95,7 +95,7 @@ export default function IdentifyPage() {
                   disabled={connectedPlayers.includes(member.id)}
                 >
                   {member.name}
-                  {connectedPlayers.includes(member.id) ? " (already connected)" : ""}
+                  {connectedPlayers.includes(member.id) ? " (ya conectado)" : ""}
                 </option>
               ))}
             </select>
@@ -113,13 +113,13 @@ export default function IdentifyPage() {
             size="lg"
             disabled={!selectedPlayer || isLoading}
           >
-            {isLoading ? "Joining..." : "Join Game"}
+            {isLoading ? "Uniéndose..." : "Unirse al Juego"}
           </Button>
         </form>
 
         <div className="pt-4 border-t border-border text-center text-sm text-muted-foreground">
-          <p>Only select your own name</p>
-          <p className="mt-1">Each family member should use their own device</p>
+          <p>Solo selecciona tu propio nombre</p>
+          <p className="mt-1">Cada miembro de la familia debe usar su propio dispositivo</p>
         </div>
       </Card>
     </div>

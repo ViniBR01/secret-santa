@@ -54,10 +54,10 @@ export function YourTurnNotification({ playerName }: YourTurnNotificationProps) 
               }}
               className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg"
             >
-              It&apos;s Your Turn!
+              ¡Es Tu Turno!
             </motion.h2>
             <p className="text-xl md:text-2xl text-white/90 font-medium">
-              {playerName}, choose your mystery gift! 🎁
+              ¡{playerName}, elige tu regalo misterioso! 🎁
             </p>
           </div>
 
@@ -70,7 +70,7 @@ export function YourTurnNotification({ playerName }: YourTurnNotificationProps) 
             }}
             className="text-sm text-white/80 pt-2"
           >
-            Select one of the gift boxes below ⬇️
+            Selecciona una de las cajas de regalo abajo ⬇️
           </motion.div>
         </div>
       </div>

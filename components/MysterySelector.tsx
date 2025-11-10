@@ -44,14 +44,14 @@ export const MysterySelector = forwardRef<HTMLDivElement, MysterySelectorProps>(
           className="inline-flex items-center gap-2 text-2xl sm:text-3xl font-bold text-primary"
         >
           <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 animate-pulse" />
-          <span>{currentDrawerName}&apos;s Turn</span>
+          <span>Turno de {currentDrawerName}</span>
           <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 animate-pulse" />
         </motion.div>
         <p className="text-lg sm:text-xl text-muted-foreground">
-          Choose one of the mystery gifts below
+          Elige uno de los regalos misteriosos abajo
         </p>
         <p className="text-sm sm:text-base text-muted-foreground/70">
-          {optionCount} {optionCount === 1 ? "option" : "options"} available
+          {optionCount} {optionCount === 1 ? "opción disponible" : "opciones disponibles"}
         </p>
       </div>
 
@@ -152,7 +152,7 @@ export const MysterySelector = forwardRef<HTMLDivElement, MysterySelectorProps>(
                 {/* Box number */}
                 <div className="relative z-10 mt-2">
                   <span className="text-xs sm:text-sm font-semibold text-gray-500 dark:text-gray-400">
-                    Gift #{index + 1}
+                    Regalo #{index + 1}
                   </span>
                 </div>
 
@@ -203,7 +203,7 @@ export const MysterySelector = forwardRef<HTMLDivElement, MysterySelectorProps>(
         transition={{ delay: optionCount * 0.1 + 0.3 }}
         className="text-center text-sm text-muted-foreground/60"
       >
-        Each gift contains one of the available people. Choose wisely! 🎁
+        Cada regalo contiene una de las personas disponibles. ¡Elige sabiamente! 🎁
       </motion.p>
     </div>
     );

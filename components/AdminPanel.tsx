@@ -49,7 +49,7 @@ export function AdminPanel({
           <div className="flex items-center gap-2">
             <Shield className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             <h3 className="font-bold text-purple-900 dark:text-purple-100">
-              Admin Panel
+              Panel de Admin
             </h3>
           </div>
           {isExpanded ? (
@@ -67,7 +67,7 @@ export function AdminPanel({
               <div className="bg-white dark:bg-slate-900 rounded-lg p-3 border border-purple-200 dark:border-purple-800">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                   <Users className="w-3 h-3" />
-                  <span>Connected</span>
+                  <span>Conectados</span>
                 </div>
                 <p className="text-lg font-bold text-purple-700 dark:text-purple-300">
                   {connectedPlayers} / {totalPlayers}
@@ -76,7 +76,7 @@ export function AdminPanel({
               <div className="bg-white dark:bg-slate-900 rounded-lg p-3 border border-purple-200 dark:border-purple-800">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                   <PlayCircle className="w-3 h-3" />
-                  <span>Progress</span>
+                  <span>Progreso</span>
                 </div>
                 <p className="text-lg font-bold text-purple-700 dark:text-purple-300">
                   {completedDraws} / {totalPlayers}
@@ -88,13 +88,13 @@ export function AdminPanel({
             {currentDrawer && !gameState.isComplete && (
               <div className="bg-white dark:bg-slate-900 rounded-lg p-3 border border-green-300 dark:border-green-700">
                 <p className="text-xs text-muted-foreground mb-1">
-                  Current Turn
+                  Turno Actual
                 </p>
                 <p className="font-semibold text-green-700 dark:text-green-300">
                   🎯 {currentDrawer.name}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Phase: <span className="font-medium">{gameState.selectionPhase}</span>
+                  Fase: <span className="font-medium">{gameState.selectionPhase}</span>
                 </p>
               </div>
             )}
@@ -103,7 +103,7 @@ export function AdminPanel({
             <div className="space-y-2">
               <h4 className="text-sm font-semibold text-purple-900 dark:text-purple-100 flex items-center gap-2">
                 <UserCog className="w-4 h-4" />
-                Admin Actions
+                Acciones de Admin
               </h4>
               
               <Button
@@ -114,7 +114,7 @@ export function AdminPanel({
                 className="w-full gap-2 border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-950/30"
               >
                 <UserCog className="w-4 h-4" />
-                Set Next Result
+                Establecer Próximo Resultado
               </Button>
             </div>
 

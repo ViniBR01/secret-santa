@@ -19,16 +19,16 @@ export function PlayerConnectionStatus({
 }: PlayerConnectionStatusProps) {
   const formatLastSeen = (timestamp: number) => {
     const seconds = Math.floor((Date.now() - timestamp) / 1000);
-    if (seconds < 60) return "Just now";
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    return `${Math.floor(seconds / 3600)}h ago`;
+    if (seconds < 60) return "Ahora mismo";
+    if (seconds < 3600) return `Hace ${Math.floor(seconds / 60)}m`;
+    return `Hace ${Math.floor(seconds / 3600)}h`;
   };
 
   return (
     <Card className="p-4">
       <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
         <Circle className="w-4 h-4" />
-        Player Status
+        Estado de Jugadores
       </h3>
       <div className="space-y-2">
         {members.map((member) => {
@@ -56,14 +56,14 @@ export function PlayerConnectionStatus({
                 />
                 <span className={`text-sm ${isCurrentUser ? "font-bold" : ""}`}>
                   {member.name}
-                  {isCurrentUser && " (You)"}
+                  {isCurrentUser && " (Tú)"}
                   {isCurrentDrawer && " 🎯"}
                 </span>
               </div>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 {isOnline ? (
                   <span className="text-green-600 dark:text-green-400">
-                    Online
+                    En línea
                   </span>
                 ) : session ? (
                   <span className="flex items-center gap-1">
@@ -71,7 +71,7 @@ export function PlayerConnectionStatus({
                     {formatLastSeen(session.lastSeen)}
                   </span>
                 ) : (
-                  <span className="text-gray-500">Not connected</span>
+                  <span className="text-gray-500">No conectado</span>
                 )}
               </div>
             </div>

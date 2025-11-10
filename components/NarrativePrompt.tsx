@@ -74,7 +74,7 @@ export function NarrativePrompt({
               >
                 <Gift className="w-4 h-4" />
                 <span>
-                  Draw {drawerOrder} of {totalDrawers}
+                  Sorteo {drawerOrder} de {totalDrawers}
                 </span>
               </motion.div>
             )}
@@ -91,7 +91,7 @@ export function NarrativePrompt({
               className="space-y-2"
             >
               <p className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-700 dark:text-gray-300">
-                Get ready...
+                Prepárate...
               </p>
               <motion.h2
                 animate={{
@@ -104,7 +104,7 @@ export function NarrativePrompt({
                 }}
                 className="text-3xl sm:text-4xl md:text-6xl font-bold bg-gradient-to-r from-red-600 via-green-600 to-red-600 bg-clip-text text-transparent"
               >
-                {currentDrawerName}&apos;s Turn!
+                ¡Turno de {currentDrawerName}!
               </motion.h2>
             </motion.div>
 
@@ -141,7 +141,7 @@ export function NarrativePrompt({
               transition={{ delay: 0.7 }}
               className="text-base sm:text-lg text-muted-foreground pt-2"
             >
-              🎄 Choose your mystery gift below 🎁
+              🎄 Elige tu regalo misterioso 🎁
             </motion.p>
           </div>
         </div>
@@ -170,7 +170,7 @@ export function NarrativePrompt({
           <Gift className="w-8 h-8 sm:w-10 sm:h-10 text-primary" />
         </motion.div>
         <p className="text-lg sm:text-xl font-semibold">
-          {currentDrawerName} is choosing...
+          {currentDrawerName} está eligiendo...
         </p>
       </motion.div>
     );
@@ -205,7 +205,7 @@ export function NarrativePrompt({
           }}
           className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400"
         >
-          Opening the mystery gift...
+          Abriendo el regalo misterioso...
         </motion.p>
       </motion.div>
     );

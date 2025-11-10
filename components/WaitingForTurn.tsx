@@ -38,7 +38,7 @@ export function WaitingForTurn({
 
         <div className="space-y-2">
           <h2 className="text-2xl font-bold text-foreground">
-            {isActivelySelecting ? "Selection in Progress..." : "Waiting for Turn..."}
+            {isActivelySelecting ? "Selección en Progreso..." : "Esperando Turno..."}
           </h2>
           <p className="text-lg text-muted-foreground">
             <span className={`font-semibold ${
@@ -49,22 +49,22 @@ export function WaitingForTurn({
               {currentDrawerName}
             </span>{" "}
             {isActivelySelecting 
-              ? "is choosing from the mystery gifts right now..." 
-              : "is currently selecting their Secret Santa"}
+              ? "está eligiendo entre los regalos misteriosos ahora..." 
+              : "está seleccionando su persona secreta"}
           </p>
         </div>
 
         {playerName && position && total && (
           <div className="pt-4 border-t border-border/50">
             <p className="text-sm text-muted-foreground">
-              You are <span className="font-bold">{playerName}</span>
+              Eres <span className="font-bold">{playerName}</span>
             </p>
             <p className="text-sm text-muted-foreground mt-1">
-              Position{" "}
+              Posición{" "}
               <span className="font-bold text-primary">
                 #{position}
               </span>{" "}
-              of {total} in the draw order
+              de {total} en el orden de sorteo
             </p>
           </div>
         )}

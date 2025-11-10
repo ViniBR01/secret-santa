@@ -124,7 +124,7 @@ export function RevealAnimation({ gifteeName, drawerName, onComplete }: RevealAn
                   className="space-y-2"
                 >
                   <p className="text-xl sm:text-2xl font-semibold text-gray-700 dark:text-gray-300">
-                    Opening mystery gift...
+                    Abriendo regalo misterioso...
                   </p>
                   <div className="flex justify-center gap-2">
                     {[...Array(3)].map((_, i) => (
@@ -171,7 +171,7 @@ export function RevealAnimation({ gifteeName, drawerName, onComplete }: RevealAn
                   animate={{ y: 0, opacity: 1 }}
                   className="text-2xl sm:text-3xl font-bold text-orange-600 dark:text-orange-400"
                 >
-                  Revealing...
+                  Revelando...
                 </motion.p>
               </CardContent>
             </Card>
@@ -243,7 +243,7 @@ export function RevealAnimation({ gifteeName, drawerName, onComplete }: RevealAn
                 >
                   <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400">
                     <span className="font-bold text-gray-800 dark:text-gray-200">{drawerName}</span>{" "}
-                    will give a gift to...
+                    le dará un regalo a...
                   </p>
 
                   <motion.h2

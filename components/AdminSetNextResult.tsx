@@ -34,10 +34,10 @@ export function AdminSetNextResult({
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-2xl font-bold text-primary">
-              Set Result for {currentDrawerName}
+              Establecer Resultado para {currentDrawerName}
             </h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Manually select who {currentDrawerName} will draw
+              Selecciona manualmente a quién le tocará {currentDrawerName}
             </p>
           </div>
           <Button variant="ghost" size="sm" onClick={onCancel}>
@@ -71,29 +71,29 @@ export function AdminSetNextResult({
         {/* Warning */}
         <div className="bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
           <p className="text-sm text-orange-700 dark:text-orange-300">
-            ⚠️ <span className="font-semibold">Admin Override:</span> This will directly assign{" "}
+            ⚠️ <span className="font-semibold">Anulación de Admin:</span> Esto asignará directamente a{" "}
             {selectedGifteeId && availableMembers.find(m => m.id === selectedGifteeId) ? (
               <span className="font-bold">
                 {availableMembers.find(m => m.id === selectedGifteeId)?.name}
               </span>
             ) : (
-              "the selected person"
+              "la persona seleccionada"
             )}{" "}
-            to <span className="font-bold">{currentDrawerName}</span> without using the mystery boxes.
+            a <span className="font-bold">{currentDrawerName}</span> sin usar las cajas misteriosas.
           </p>
         </div>
 
         {/* Actions */}
         <div className="flex gap-3 justify-end">
           <Button variant="outline" onClick={onCancel}>
-            Cancel
+            Cancelar
           </Button>
           <Button
             onClick={handleConfirm}
             disabled={selectedGifteeId === null}
             className="bg-purple-600 hover:bg-purple-700"
           >
-            Confirm Assignment
+            Confirmar Asignación
           </Button>
         </div>
       </Card>

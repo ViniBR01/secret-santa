@@ -29,12 +29,12 @@ export function WaitingForGameStart({ playerName }: WaitingForGameStartProps) {
       <Card className="w-full max-w-md p-8 space-y-6">
         <div className="text-center space-y-4">
           <Gift className="w-16 h-16 mx-auto text-primary animate-pulse" />
-          <h1 className="text-3xl font-bold text-primary">Secret Santa</h1>
+          <h1 className="text-3xl font-bold text-primary">Intercambio 2025</h1>
           
           {playerName && (
             <div className="inline-block px-4 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
               <p className="text-sm text-blue-800 dark:text-blue-200">
-                Welcome, <span className="font-semibold">{playerName}</span>!
+                ¡Bienvenido/a, <span className="font-semibold">{playerName}</span>!
               </p>
             </div>
           )}
@@ -43,18 +43,18 @@ export function WaitingForGameStart({ playerName }: WaitingForGameStartProps) {
         <div className="space-y-4 py-6">
           <div className="flex items-center justify-center gap-3 text-muted-foreground">
             <Clock className="w-5 h-5 animate-spin" />
-            <p className="text-lg">Waiting for game to start...</p>
+            <p className="text-lg">Esperando a que comience el juego...</p>
           </div>
           
           <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
             <p className="text-sm text-yellow-800 dark:text-yellow-200 text-center">
-              The admin will start the game when everyone is ready.
+              El administrador iniciará el juego cuando todos estén listos.
             </p>
           </div>
 
           <div className="text-center text-sm text-muted-foreground space-y-2 pt-4">
-            <p>Stay on this page and wait for the game to begin.</p>
-            <p>You&apos;ll automatically enter the game when it starts!</p>
+            <p>Permanece en esta página y espera a que comience el juego.</p>
+            <p>¡Entrarás automáticamente al juego cuando comience!</p>
           </div>
         </div>
 
@@ -65,7 +65,7 @@ export function WaitingForGameStart({ playerName }: WaitingForGameStartProps) {
             className="w-full gap-2"
           >
             <LogOut className="w-4 h-4" />
-            Logout
+            Cambiar Jugador
           </Button>
         </div>
       </Card>

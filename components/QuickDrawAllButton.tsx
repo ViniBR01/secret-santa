@@ -26,7 +26,7 @@ export function QuickDrawAllButton({
       className="min-w-[200px] sm:min-w-[250px] shadow-lg hover:shadow-xl transition-all"
     >
       <Zap className="w-6 h-6 mr-2" />
-      Quick Draw All {remainingDraws > 0 && `(${remainingDraws})`}
+      Sorteo Rápido de Todos {remainingDraws > 0 && `(${remainingDraws})`}
     </Button>
   );
 }

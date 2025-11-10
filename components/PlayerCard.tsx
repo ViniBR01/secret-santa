@@ -20,19 +20,19 @@ export function PlayerCard({ playerState, isCurrentDrawer = false, gifteeName, o
       icon: Clock,
       bgColor: "bg-muted",
       textColor: "text-muted-foreground",
-      label: "Waiting",
+      label: "Esperando",
     },
     drawing: {
       icon: Sparkles,
       bgColor: "bg-primary",
       textColor: "text-primary-foreground",
-      label: "Drawing now!",
+      label: "¡Sorteando ahora!",
     },
     completed: {
       icon: Check,
       bgColor: "bg-green-500",
       textColor: "text-white",
-      label: "Complete",
+      label: "Completado",
     },
   };
 
@@ -73,7 +73,7 @@ export function PlayerCard({ playerState, isCurrentDrawer = false, gifteeName, o
               <Icon className="w-4 h-4" />
               <span className="text-sm">{config.label}</span>
               {isClickable && (
-                <span className="text-xs italic ml-1">(tap to start)</span>
+                <span className="text-xs italic ml-1">(toca para comenzar)</span>
               )}
             </div>
           </div>

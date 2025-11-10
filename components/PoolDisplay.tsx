@@ -31,14 +31,14 @@ export function PoolDisplay({
         <div className="flex items-center gap-2">
           <Users className={`${compact ? "w-4 h-4" : "w-5 h-5"} text-primary`} />
           <h3 className={`${compact ? "text-sm" : "text-lg"} font-bold text-gray-800 dark:text-gray-200`}>
-            Player Pool
+            Grupo de Jugadores
           </h3>
         </div>
 
         {/* Progress bar */}
         <div className="space-y-1">
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Progress</span>
+            <span>Progreso</span>
             <span>
               {drawnMembers.length}/{totalMembers}
             </span>
@@ -60,7 +60,7 @@ export function PoolDisplay({
           <div className="flex items-center gap-2">
             <Circle className={`${compact ? "w-3 h-3" : "w-4 h-4"} text-blue-500`} />
             <h4 className={`${compact ? "text-xs" : "text-sm"} font-semibold text-gray-700 dark:text-gray-300`}>
-              Still Available ({availableMembers.length})
+              Aún Disponibles ({availableMembers.length})
             </h4>
           </div>
           <div className="space-y-1 max-h-48 overflow-y-auto pr-2">
@@ -97,7 +97,7 @@ export function PoolDisplay({
           <div className="flex items-center gap-2">
             <CheckCircle className={`${compact ? "w-3 h-3" : "w-4 h-4"} text-green-500`} />
             <h4 className={`${compact ? "text-xs" : "text-sm"} font-semibold text-gray-700 dark:text-gray-300`}>
-              Already Drawn ({drawnMembers.length})
+              Ya Sorteados ({drawnMembers.length})
             </h4>
           </div>
           <div className="space-y-1 max-h-48 overflow-y-auto pr-2">
@@ -132,7 +132,7 @@ export function PoolDisplay({
       {availableMembers.length === 0 && drawnMembers.length === 0 && (
         <div className="text-center py-6 text-muted-foreground">
           <Users className="w-12 h-12 mx-auto mb-2 opacity-30" />
-          <p className="text-sm">No players yet</p>
+          <p className="text-sm">Aún no hay jugadores</p>
         </div>
       )}
     </motion.div>

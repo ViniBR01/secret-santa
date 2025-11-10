@@ -103,7 +103,7 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
   // Admin action: Set next result
   const handleAdminSetNextResult = () => {
     if (gameState.selectionPhase !== 'waiting') {
-      alert("Can only set next result when waiting for turn to start");
+      alert("Solo se puede establecer el próximo resultado cuando se espera que comience el turno");
       return;
     }
     setShowAdminSetResultDialog(true);
@@ -120,7 +120,7 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
 
       if (!response.ok) {
         const error = await response.json();
-        alert(`Failed to set next result: ${error.error}`);
+        alert(`Error al establecer el próximo resultado: ${error.error}`);
         return;
       }
 
@@ -128,7 +128,7 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
       // State will be updated via Pusher
     } catch (err) {
       console.error("Error setting next result:", err);
-      alert("Failed to set next result. Please try again.");
+      alert("Error al establecer el próximo resultado. Por favor, intenta de nuevo.");
     }
   };
 
@@ -167,7 +167,7 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
   }, [gameState.selectionPhase]);
 
   const handleReset = () => {
-    if (confirm("Are you sure you want to restart the Secret Santa draw?")) {
+    if (confirm("¿Estás seguro de que quieres reiniciar el sorteo del Intercambio?")) {
       gameState.resetGame();
       setShowReveal(false);
       lastShownDrawerIdRef.current = null;
@@ -175,7 +175,7 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
   };
 
   const handleQuickDrawAll = async () => {
-    if (confirm("This will complete all remaining draws automatically. Continue?")) {
+    if (confirm("Esto completará todos los sorteos restantes automáticamente. ¿Continuar?")) {
       await gameState.quickDrawAll();
     }
   };
@@ -189,7 +189,7 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
             <div className="flex-1" />
             <h1 className="text-4xl sm:text-6xl font-bold text-primary flex items-center gap-3 flex-1 justify-center">
               <Gift className="w-10 h-10 sm:w-14 sm:h-14" />
-              Secret Santa
+              Intercambio 2025
             </h1>
             <div className="flex-1 flex justify-end">
               <Button
@@ -199,12 +199,12 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
                 className="gap-2"
               >
                 <LogOut className="w-4 h-4" />
-                Logout
+                Cambiar Jugador
               </Button>
             </div>
           </div>
           <p className="text-lg sm:text-xl text-muted-foreground">
-            Family Gift Exchange
+            Intercambio Familiar de Regalos
           </p>
           {/* Role indicator */}
           <div className="flex items-center justify-center gap-2 text-sm">
@@ -233,10 +233,10 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
             <div className="bg-green-500/10 border border-green-500 rounded-lg p-6 text-center space-y-4">
               <PartyPopper className="w-16 h-16 mx-auto text-green-500" />
               <h2 className="text-2xl sm:text-3xl font-bold text-green-700 dark:text-green-400">
-                All Done! 🎉
+                ¡Todo Listo! 🎉
               </h2>
               <p className="text-lg text-muted-foreground">
-                Everyone has been assigned their Secret Santa!
+                ¡Todos han sido asignados su persona secreta!
               </p>
             </div>
             <ResultsDisplay assignments={gameState.assignments} />
@@ -274,7 +274,7 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
                         className="min-w-[250px] shadow-lg hover:shadow-xl transition-all text-lg py-6"
                       >
                         <Sparkles className="w-6 h-6 mr-2" />
-                        Start {currentDrawer.name}&apos;s Turn
+                        Comenzar Turno de {currentDrawer.name}
                       </Button>
                     </div>
                   )}
@@ -333,9 +333,9 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
               {/* Player cards - draw order */}
               <div className="space-y-3 sm:space-y-4">
                 <h2 className="text-xl sm:text-2xl font-semibold flex items-center gap-2">
-                  <span>Draw Order</span>
+                  <span>Orden de Sorteo</span>
                   <span className="text-sm text-muted-foreground font-normal">
-                    ({gameState.currentDrawerIndex} of {familyConfig.drawOrder.length} complete)
+                    ({gameState.currentDrawerIndex} de {familyConfig.drawOrder.length} completado)
                   </span>
                 </h2>
                 <div className="space-y-3">
@@ -393,7 +393,7 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
               className="gap-2"
             >
               <RotateCcw className="w-4 h-4" />
-              Reset Game
+              Reiniciar Juego
             </Button>
           </div>
         )}

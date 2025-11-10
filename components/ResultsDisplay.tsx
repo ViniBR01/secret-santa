@@ -26,7 +26,7 @@ export function ResultsDisplay({ assignments }: ResultsDisplayProps) {
       <CardHeader>
         <CardTitle className="text-center flex items-center justify-center gap-2 text-2xl sm:text-3xl">
           <Gift className="w-8 h-8 text-green-600" />
-          Secret Santa Assignments 🎁
+          Asignaciones del Intercambio 🎁
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">

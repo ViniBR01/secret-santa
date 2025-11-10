@@ -41,7 +41,7 @@ export function AdminStartGame() {
   };
 
   const handleResetGame = () => {
-    if (confirm("Are you sure you want to reset the game? This will clear all progress.")) {
+    if (confirm("¿Estás seguro de que quieres reiniciar el juego? Esto borrará todo el progreso.")) {
       gameState.resetGame();
     }
   };
@@ -63,9 +63,9 @@ export function AdminStartGame() {
               👑 Admin
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-primary">Secret Santa</h1>
+          <h1 className="text-3xl font-bold text-primary">Intercambio 2025</h1>
           <p className="text-lg text-muted-foreground">
-            Ready to start the gift exchange?
+            ¿Listos para comenzar el intercambio de regalos?
           </p>
         </div>
 
@@ -82,7 +82,7 @@ export function AdminStartGame() {
             <div className="flex items-center gap-3">
               <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               <div>
-                <p className="text-sm text-muted-foreground">Connected Players</p>
+                <p className="text-sm text-muted-foreground">Jugadores Conectados</p>
                 <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">
                   {connectedPlayerIds.length} / {totalPlayers}
                 </p>
@@ -97,7 +97,7 @@ export function AdminStartGame() {
           <div className="bg-white dark:bg-slate-900 rounded-lg border border-border p-4">
             <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
               <Users className="w-4 h-4" />
-              Player Status
+              Estado de Jugadores
             </h3>
             <div className="grid grid-cols-2 gap-2">
               {familyConfig.members.map((member) => {
@@ -126,8 +126,8 @@ export function AdminStartGame() {
           {/* Info box */}
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <p className="text-sm text-blue-800 dark:text-blue-200">
-              <strong>Tip:</strong> You can start the game even if not all players are connected. 
-              Late joiners will be able to see the current game state when they connect.
+              <strong>Consejo:</strong> Puedes iniciar el juego aunque no todos los jugadores estén conectados. 
+              Los que se unan tarde podrán ver el estado actual del juego cuando se conecten.
             </p>
           </div>
         </div>
@@ -141,7 +141,7 @@ export function AdminStartGame() {
             className="w-full text-lg py-6 shadow-lg hover:shadow-xl transition-all"
           >
             <Play className="w-6 h-6 mr-2" />
-            {isStarting ? "Starting Game..." : "Start Game"}
+            {isStarting ? "Iniciando Juego..." : "Iniciar Juego"}
           </Button>
 
           <div className="grid grid-cols-2 gap-3">
@@ -150,7 +150,7 @@ export function AdminStartGame() {
               onClick={handleResetGame}
               disabled={isStarting}
             >
-              Reset Game
+              Reiniciar Juego
             </Button>
             <Button
               variant="outline"
@@ -159,7 +159,7 @@ export function AdminStartGame() {
               className="gap-2"
             >
               <LogOut className="w-4 h-4" />
-              Logout
+              Cambiar Jugador
             </Button>
           </div>
         </div>
