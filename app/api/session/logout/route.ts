@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { clearSessionCookie, getSession } from "@/lib/session";
 import { pusherServer, PUSHER_CHANNEL, PUSHER_EVENTS } from "@/lib/pusher";
+import { getGameState, setGameState } from "@/lib/server-state";
 
 // Mark route as dynamic to ensure cookies are read at request time
 export const dynamic = 'force-dynamic';
@@ -13,8 +14,16 @@ export async function POST() {
     // Clear the session cookie
     await clearSessionCookie();
 
-    // Broadcast player disconnection via Pusher (if configured and was a player)
+    // Mark player as offline in server state (if was a player)
     if (session?.role === "player" && session.playerId) {
+      const gameState = getGameState();
+      if (gameState && gameState.activePlayerSessions[session.playerId]) {
+        gameState.activePlayerSessions[session.playerId].isOnline = false;
+        gameState.activePlayerSessions[session.playerId].lastSeen = Date.now();
+        setGameState(gameState);
+      }
+
+      // Broadcast player disconnection via Pusher (if configured)
       const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY;
       if (pusherKey && pusherKey !== "your_pusher_key_here") {
         await pusherServer.trigger(

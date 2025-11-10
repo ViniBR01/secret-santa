@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { setSessionCookie, verifyAdminCode } from "@/lib/session";
 import { pusherServer, PUSHER_CHANNEL, PUSHER_EVENTS } from "@/lib/pusher";
+import { ensureGameState, setGameState } from "@/lib/server-state";
 
 // Mark route as dynamic to ensure cookies are set at request time
 export const dynamic = 'force-dynamic';
@@ -22,13 +23,20 @@ export async function POST(request: NextRequest) {
       role: "admin",
     });
 
+    const timestamp = Date.now();
+    const adminId = `admin-${timestamp}`;
+
+    // Update server-side game state to set admin
+    const gameState = ensureGameState();
+    gameState.adminId = adminId;
+    setGameState(gameState);
+
     // Broadcast admin connection via Pusher (if configured)
     const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY;
     if (pusherKey && pusherKey !== "your_pusher_key_here") {
-      const adminId = `admin-${Date.now()}`;
       await pusherServer.trigger(PUSHER_CHANNEL, PUSHER_EVENTS.ADMIN_SET, {
         adminId,
-        timestamp: Date.now(),
+        timestamp,
       });
     }
 

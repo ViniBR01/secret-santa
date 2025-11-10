@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { pusherServer, PUSHER_CHANNEL, PUSHER_EVENTS } from "@/lib/pusher";
 import { GameState } from "@/types";
 import { getSession } from "@/lib/session";
-import { getGameState, setGameState, resetGameState } from "@/lib/server-state";
+import { getGameState, setGameState, resetGameState, updateSessionTimestamps } from "@/lib/server-state";
 
 // Disable caching for this route to ensure fresh game state
 export const dynamic = 'force-dynamic';
@@ -10,6 +10,9 @@ export const revalidate = 0;
 
 export async function GET() {
   try {
+    // Update session timestamps to mark stale sessions as offline
+    updateSessionTimestamps();
+    
     // Return the current game state
     // If no game has been started yet, return null
     const gameState = getGameState();

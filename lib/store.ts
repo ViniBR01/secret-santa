@@ -521,9 +521,31 @@ export const useGameStore = create<GameStore>((set, get) => ({
       gameLifecycle: state.gameLifecycle // DEBUG: Log lifecycle state
     });
     console.log("🔄 Full state being set:", state); // DEBUG: Log full state
+    
+    // Intelligently merge activePlayerSessions to preserve local real-time updates
+    const currentState = get();
+    const mergedSessions: Record<string, PlayerSession> = { ...state.activePlayerSessions };
+    
+    // For each player in local state, use the most recent data
+    Object.keys(currentState.activePlayerSessions).forEach(playerId => {
+      const localSession = currentState.activePlayerSessions[playerId];
+      const incomingSession = state.activePlayerSessions[playerId];
+      
+      // If both exist, use whichever has the most recent lastSeen
+      if (localSession && incomingSession) {
+        mergedSessions[playerId] = localSession.lastSeen > incomingSession.lastSeen 
+          ? localSession 
+          : incomingSession;
+      } else if (localSession) {
+        // Keep local session if not in incoming state
+        mergedSessions[playerId] = localSession;
+      }
+    });
+    
     // Preserve isGameReady flag when updating state
     set({
       ...state,
+      activePlayerSessions: mergedSessions,
       isGameReady: true,
     });
   },

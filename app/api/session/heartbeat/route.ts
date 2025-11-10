@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { pusherServer, PUSHER_CHANNEL, PUSHER_EVENTS } from "@/lib/pusher";
+import { ensureGameState, setGameState } from "@/lib/server-state";
+import { PlayerSession } from "@/types";
 
 // Mark route as dynamic to ensure cookies are read at request time
 export const dynamic = 'force-dynamic';
@@ -17,6 +19,18 @@ export async function POST() {
     }
 
     const timestamp = Date.now();
+
+    // Update server-side game state with fresh heartbeat
+    const gameState = ensureGameState();
+    const existingSession = gameState.activePlayerSessions[session.playerId];
+    const playerSession: PlayerSession = {
+      playerId: session.playerId,
+      connectedAt: existingSession?.connectedAt || timestamp,
+      lastSeen: timestamp,
+      isOnline: true,
+    };
+    gameState.activePlayerSessions[session.playerId] = playerSession;
+    setGameState(gameState);
 
     // Broadcast heartbeat via Pusher (if configured)
     const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY;

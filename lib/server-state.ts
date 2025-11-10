@@ -52,3 +52,24 @@ export function ensureGameState(): GameState {
   return globalThis.gameState;
 }
 
+/**
+ * Update session timestamps and mark stale sessions as offline
+ * Sessions are considered stale if their lastSeen is older than the timeout threshold
+ */
+export function updateSessionTimestamps(timeoutMs: number = 60000): void {
+  if (!globalThis.gameState) {
+    return;
+  }
+
+  const now = Date.now();
+  const sessions = globalThis.gameState.activePlayerSessions;
+
+  for (const playerId in sessions) {
+    const session = sessions[playerId];
+    if (session.isOnline && (now - session.lastSeen) > timeoutMs) {
+      // Mark as offline but keep the session record
+      session.isOnline = false;
+    }
+  }
+}
+
