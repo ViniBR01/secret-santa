@@ -2,7 +2,7 @@
 
 import { useGameStore } from "@/lib/store";
 import { getPlayerStates, getCurrentDrawer } from "@/lib/game-logic";
-import { familyConfig, getMemberById } from "@/lib/family-config";
+import { familyConfig, getMemberById, getConfettiColorsForMember } from "@/lib/family-config";
 import { PlayerCard } from "./PlayerCard";
 import { QuickDrawAllButton } from "./QuickDrawAllButton";
 import { ResultsDisplay } from "./ResultsDisplay";
@@ -405,6 +405,7 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
             drawerName={getMemberById(gameState.lastDrawResult.drawerId)?.name || "Someone"}
             gifteeAvatar={getMemberById(gameState.lastDrawResult.gifteeId)?.avatar}
             drawerAvatar={getMemberById(gameState.lastDrawResult.drawerId)?.avatar}
+            confettiColors={getConfettiColorsForMember(gameState.lastDrawResult.gifteeId)}
             onComplete={handleRevealComplete}
           />
         )}

@@ -11,12 +11,12 @@ interface RevealAnimationProps {
   drawerName: string;
   gifteeAvatar?: string;
   drawerAvatar?: string;
+  confettiColors?: string[]; // Custom confetti colors based on family member
   onComplete?: () => void;
 }
 
 // Confetti particle component
-function ConfettiParticle({ delay }: { delay: number }) {
-  const colors = ["#ef4444", "#10b981", "#3b82f6", "#f59e0b", "#a855f7"];
+function ConfettiParticle({ delay, colors }: { delay: number; colors: string[] }) {
   const color = colors[Math.floor(Math.random() * colors.length)];
   const startX = Math.random() * 100;
   const endX = startX + (Math.random() - 0.5) * 50;
@@ -39,7 +39,7 @@ function ConfettiParticle({ delay }: { delay: number }) {
         scale: [1, 1.2, 0.8],
       }}
       transition={{
-        duration: 2 + Math.random(),
+        duration: 4 + Math.random() * 2, // Doubled: was 2 + random(0-1), now 4 + random(0-2)
         delay,
         ease: "easeIn",
       }}
@@ -55,9 +55,12 @@ function ConfettiParticle({ delay }: { delay: number }) {
   );
 }
 
-export function RevealAnimation({ gifteeName, drawerName, gifteeAvatar, drawerAvatar, onComplete }: RevealAnimationProps) {
+export function RevealAnimation({ gifteeName, drawerName, gifteeAvatar, drawerAvatar, confettiColors, onComplete }: RevealAnimationProps) {
   const [phase, setPhase] = useState<"suspense" | "opening" | "reveal">("suspense");
   const [showConfetti, setShowConfetti] = useState(false);
+  
+  // Use custom colors or default festive colors
+  const colors = confettiColors || ["#ef4444", "#10b981", "#3b82f6", "#f59e0b", "#a855f7"];
 
   useEffect(() => {
     // Phase 1: Suspense buildup (1.5s)
@@ -71,12 +74,12 @@ export function RevealAnimation({ gifteeName, drawerName, gifteeAvatar, drawerAv
       setShowConfetti(true);
     }, 2500);
 
-    // Phase 3: Display reveal and confetti (3s)
+    // Phase 3: Display reveal and confetti (6s) - doubled for better appreciation
     const completeTimer = setTimeout(() => {
       if (onComplete) {
         onComplete();
       }
-    }, 5500);
+    }, 8500);
 
     return () => {
       clearTimeout(suspenseTimer);
@@ -90,8 +93,8 @@ export function RevealAnimation({ gifteeName, drawerName, gifteeAvatar, drawerAv
       {/* Confetti */}
       {showConfetti && (
         <div className="fixed inset-0 pointer-events-none overflow-hidden">
-          {[...Array(50)].map((_, i) => (
-            <ConfettiParticle key={i} delay={i * 0.02} />
+          {[...Array(100)].map((_, i) => (
+            <ConfettiParticle key={i} delay={i * 0.02} colors={colors} />
           ))}
         </div>
       )}

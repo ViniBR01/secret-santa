@@ -130,3 +130,26 @@ export function getClicThemeByMemberId(memberId: string) {
   return clic;
 }
 
+// Helper function to extract confetti colors from clic based on member
+export function getConfettiColorsForMember(memberId: string): string[] {
+  const clic = getClicThemeByMemberId(memberId);
+  if (!clic) {
+    // Default festive colors if no clic found
+    return ["#ef4444", "#10b981", "#3b82f6", "#f59e0b", "#a855f7"];
+  }
+
+  // Map Tailwind color names to hex values based on clic bgGradient
+  const clicColorMap: Record<string, string[]> = {
+    "abuelos": ["#f59e0b", "#fbbf24", "#fcd34d", "#fde047"], // amber-yellow
+    "pelaez-soni": ["#3b82f6", "#06b6d4", "#60a5fa", "#0ea5e9"], // blue-cyan
+    "sanches-pelaez": ["#a855f7", "#8b5cf6", "#c084fc", "#a78bfa"], // purple-violet
+    "silva-pelaez": ["#eab308", "#22c55e", "#84cc16", "#65a30d"], // yellow-green
+    "soni-cortez": ["#22c55e", "#10b981", "#34d399", "#059669"], // green-emerald
+    "perez-soni": ["#f97316", "#f59e0b", "#fb923c", "#fdba74"], // orange-amber
+    "diana-olivia": ["#ec4899", "#f43f5e", "#fb7185", "#fda4af"], // pink-rose
+    "magos": ["#6366f1", "#8b5cf6", "#818cf8", "#a78bfa"], // indigo-violet
+  };
+
+  return clicColorMap[clic.id] || ["#ef4444", "#10b981", "#3b82f6", "#f59e0b", "#a855f7"];
+}
+
