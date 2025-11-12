@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, CheckCircle, Circle } from "lucide-react";
 import { FamilyMember } from "@/types";
+import Image from "next/image";
 
 interface PoolDisplayProps {
   availableMembers: FamilyMember[];
@@ -80,6 +81,13 @@ export function PoolDisplay({
                     compact ? "py-1 px-2" : "py-1.5 px-3"
                   } bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800`}
                 >
+                  <Image
+                    src={member.avatar}
+                    alt={member.name}
+                    width={32}
+                    height={32}
+                    className={`${compact ? "w-6 h-6" : "w-8 h-8"} rounded-full object-cover flex-shrink-0 border border-blue-300 dark:border-blue-700`}
+                  />
                   <Circle className={`${compact ? "w-2 h-2" : "w-3 h-3"} text-blue-500 flex-shrink-0`} />
                   <span className={`${compact ? "text-xs" : "text-sm"} text-gray-700 dark:text-gray-300`}>
                     {member.name}
@@ -117,6 +125,13 @@ export function PoolDisplay({
                     compact ? "py-1 px-2" : "py-1.5 px-3"
                   } bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800 opacity-70`}
                 >
+                  <Image
+                    src={member.avatar}
+                    alt={member.name}
+                    width={32}
+                    height={32}
+                    className={`${compact ? "w-6 h-6" : "w-8 h-8"} rounded-full object-cover flex-shrink-0 border border-green-300 dark:border-green-700 grayscale`}
+                  />
                   <CheckCircle className={`${compact ? "w-2 h-2" : "w-3 h-3"} text-green-500 flex-shrink-0`} />
                   <span className={`${compact ? "text-xs" : "text-sm"} text-gray-600 dark:text-gray-400 line-through`}>
                     {member.name}

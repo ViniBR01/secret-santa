@@ -47,32 +47,32 @@ export const familyConfig: FamilyConfig = {
   ],
   members: [
     // Los Abuelos
-    { id: "abuela", name: "bis. Maricela", clicId: "abuelos" },
-    { id: "abuelo", name: "bis. Victor Manuel", clicId: "abuelos" },
+    { id: "abuela", name: "bis. Maricela", clicId: "abuelos", avatar: "/avatars/abuela.png" },
+    { id: "abuelo", name: "bis. Victor Manuel", clicId: "abuelos", avatar: "/avatars/abuelo.png" },
     // Los Pelaez-Soni
-    { id: "beni", name: "Benigno", clicId: "pelaez-soni" },
-    { id: "laura", name: "Laura Soni", clicId: "pelaez-soni" },
-    { id: "ale", name: "Ale Pelaez", clicId: "pelaez-soni" },
+    { id: "beni", name: "Benigno", clicId: "pelaez-soni", avatar: "/avatars/beni.png" },
+    { id: "laura", name: "Laura Soni", clicId: "pelaez-soni", avatar: "/avatars/laura.png" },
+    { id: "ale", name: "Ale Pelaez", clicId: "pelaez-soni", avatar: "/avatars/ale.png" },
     // Los de Quito
-    { id: "mimi", name: "Laura Pelaez", clicId: "sanches-pelaez" },
-    { id: "matias", name: "Matias Sanches", clicId: "sanches-pelaez" },
+    { id: "mimi", name: "Laura Pelaez", clicId: "sanches-pelaez", avatar: "/avatars/lau.png" },
+    { id: "matias", name: "Matias Sanches", clicId: "sanches-pelaez", avatar: "/avatars/matias.png" },
     // Los de EEUU
-    { id: "vini", name: "Vinicius da Silva", clicId: "silva-pelaez" },
-    { id: "tipi", name: "Maria Jose", clicId: "silva-pelaez" },
+    { id: "vini", name: "Vinicius da Silva", clicId: "silva-pelaez", avatar: "/avatars/vini.png" },
+    { id: "tipi", name: "Maria Jose", clicId: "silva-pelaez", avatar: "/avatars/tipi.png" },
     // Los Soni Cortez
-    { id: "carton", name: "Juan Carlos", clicId: "soni-cortez" },
-    { id: "irene", name: "Irene Cortez", clicId: "soni-cortez" },
-    { id: "marifer", name: "Maria Fernanda", clicId: "soni-cortez" },
-    { id: "dani", name: "Daniela", clicId: "soni-cortez" },
+    { id: "carton", name: "Juan Carlos", clicId: "soni-cortez", avatar: "/avatars/carlos.png" },
+    { id: "irene", name: "Irene Cortez", clicId: "soni-cortez", avatar: "/avatars/irene.png" },
+    { id: "marifer", name: "Maria Fernanda", clicId: "soni-cortez", avatar: "/avatars/marifer.png" },
+    { id: "dani", name: "Daniela", clicId: "soni-cortez", avatar: "/avatars/dani.jpeg" },
     // Los Perez
-    { id: "hugo-grande", name: "Hugo Perez Sr.", clicId: "perez-soni" },
-    { id: "mari", name: "Mari", clicId: "perez-soni" },
-    { id: "huguito", name: "Hugo Perez Jr.", clicId: "perez-soni" },
-    { id: "mariu", name: "Mariu Perez", clicId: "perez-soni" },
-    { id: "diana", name: "Diana Perez", clicId: "diana-olivia" },
-    { id: "olivia", name: "Baby Olivia", clicId: "diana-olivia" },
+    { id: "hugo-grande", name: "Hugo Perez Sr.", clicId: "perez-soni", avatar: "/avatars/hugo.png" },
+    { id: "mari", name: "Mari", clicId: "perez-soni", avatar: "/avatars/mari.png" },
+    { id: "huguito", name: "Hugo Perez Jr.", clicId: "perez-soni", avatar: "/avatars/huguito.png" },
+    { id: "mariu", name: "Mariu Perez", clicId: "perez-soni", avatar: "/avatars/mariu.png" },
+    { id: "diana", name: "Diana Perez", clicId: "diana-olivia", avatar: "/avatars/diana.png" },
+    { id: "olivia", name: "Baby Olivia", clicId: "diana-olivia", avatar: "/avatars/olivia.png" },
     // Tia Magos
-    { id: "magos", name: "Magos", clicId: "magos-luz" }
+    { id: "magos", name: "Magos", clicId: "magos-luz", avatar: "/avatars/magos.png" }
   ],
   // Order in which family members will draw
   drawOrder: [

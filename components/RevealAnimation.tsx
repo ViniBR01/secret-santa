@@ -4,10 +4,13 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Gift, Sparkles, PartyPopper } from "lucide-react";
+import Image from "next/image";
 
 interface RevealAnimationProps {
   gifteeName: string;
   drawerName: string;
+  gifteeAvatar?: string;
+  drawerAvatar?: string;
   onComplete?: () => void;
 }
 
@@ -52,7 +55,7 @@ function ConfettiParticle({ delay }: { delay: number }) {
   );
 }
 
-export function RevealAnimation({ gifteeName, drawerName, onComplete }: RevealAnimationProps) {
+export function RevealAnimation({ gifteeName, drawerName, gifteeAvatar, drawerAvatar, onComplete }: RevealAnimationProps) {
   const [phase, setPhase] = useState<"suspense" | "opening" | "reveal">("suspense");
   const [showConfetti, setShowConfetti] = useState(false);
 
@@ -233,6 +236,57 @@ export function RevealAnimation({ gifteeName, drawerName, onComplete }: RevealAn
                     <Gift className="w-20 h-20 sm:w-24 sm:h-24 text-green-600 dark:text-green-400 mx-auto" />
                   </motion.div>
                 </div>
+
+                {/* Avatar display */}
+                {(drawerAvatar || gifteeAvatar) && (
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                    className="flex items-center justify-center gap-4"
+                  >
+                    {drawerAvatar && (
+                      <motion.div
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.2, type: "spring" }}
+                        className="relative"
+                      >
+                        <Image
+                          src={drawerAvatar}
+                          alt={drawerName}
+                          width={96}
+                          height={96}
+                          className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-green-300 dark:border-green-700 shadow-lg"
+                        />
+                      </motion.div>
+                    )}
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.3, type: "spring" }}
+                      className="text-3xl sm:text-4xl"
+                    >
+                      →
+                    </motion.div>
+                    {gifteeAvatar && (
+                      <motion.div
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.4, type: "spring" }}
+                        className="relative"
+                      >
+                        <Image
+                          src={gifteeAvatar}
+                          alt={gifteeName}
+                          width={96}
+                          height={96}
+                          className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-emerald-300 dark:border-emerald-700 shadow-lg"
+                        />
+                      </motion.div>
+                    )}
+                  </motion.div>
+                )}
 
                 {/* Reveal text */}
                 <motion.div

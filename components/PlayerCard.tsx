@@ -4,6 +4,7 @@ import { PlayerState } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, Clock, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface PlayerCardProps {
   playerState: PlayerState;
@@ -57,6 +58,17 @@ export function PlayerCard({ playerState, isCurrentDrawer = false, gifteeName, o
           {/* Order badge */}
           <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-secondary flex items-center justify-center font-bold text-lg sm:text-xl">
             {order}
+          </div>
+
+          {/* Avatar */}
+          <div className="flex-shrink-0">
+            <Image
+              src={member.avatar}
+              alt={member.name}
+              width={48}
+              height={48}
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-secondary"
+            />
           </div>
 
           {/* Name and status */}

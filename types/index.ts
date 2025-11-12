@@ -4,6 +4,7 @@ export interface FamilyMember {
   id: string;
   name: string;
   clicId: string;
+  avatar: string;
 }
 
 export interface Clic {

@@ -403,6 +403,8 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
           <RevealAnimation
             gifteeName={gameState.lastDrawResult.gifteeName}
             drawerName={getMemberById(gameState.lastDrawResult.drawerId)?.name || "Someone"}
+            gifteeAvatar={getMemberById(gameState.lastDrawResult.gifteeId)?.avatar}
+            drawerAvatar={getMemberById(gameState.lastDrawResult.drawerId)?.avatar}
             onComplete={handleRevealComplete}
           />
         )}
