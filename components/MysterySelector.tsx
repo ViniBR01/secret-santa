@@ -35,7 +35,7 @@ export const MysterySelector = forwardRef<HTMLDivElement, MysterySelectorProps>(
     };
 
     return (
-      <div ref={ref} className="w-full space-y-6">
+      <div ref={ref} className="w-full space-y-6 overflow-hidden">
       {/* Header */}
       <div className="text-center space-y-2">
         <motion.div

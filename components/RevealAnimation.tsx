@@ -86,10 +86,10 @@ export function RevealAnimation({ gifteeName, drawerName, gifteeAvatar, drawerAv
   }, [onComplete]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 overflow-hidden">
       {/* Confetti */}
       {showConfetti && (
-        <div className="fixed inset-0 pointer-events-none">
+        <div className="fixed inset-0 pointer-events-none overflow-hidden">
           {[...Array(50)].map((_, i) => (
             <ConfettiParticle key={i} delay={i * 0.02} />
           ))}
