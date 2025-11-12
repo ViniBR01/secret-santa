@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Check, Clock, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { getClicThemeByMemberId } from "@/lib/family-config";
 
 interface PlayerCardProps {
   playerState: PlayerState;
@@ -15,6 +16,10 @@ interface PlayerCardProps {
 
 export function PlayerCard({ playerState, isCurrentDrawer = false, gifteeName, onStartTurn }: PlayerCardProps) {
   const { member, status, order } = playerState;
+  
+  // Get clic theme for background color
+  const clicTheme = getClicThemeByMemberId(member.id);
+  const clicBgClass = clicTheme?.bgGradient || clicTheme?.bgColor || "";
 
   const statusConfig = {
     waiting: {
@@ -47,8 +52,9 @@ export function PlayerCard({ playerState, isCurrentDrawer = false, gifteeName, o
     <Card
       className={cn(
         "transition-all duration-300",
+        clicBgClass,
         isCurrentDrawer && "ring-4 ring-primary ring-offset-2 shadow-xl scale-105",
-        status === "completed" && "opacity-75",
+        status === "completed" && "opacity-60",
         isClickable && "cursor-pointer hover:shadow-2xl hover:scale-[1.07]"
       )}
       onClick={isClickable ? onStartTurn : undefined}

@@ -12,6 +12,8 @@ export interface Clic {
   id: string;
   name: string;
   memberIds: string[];
+  bgColor?: string;      // Tailwind color class
+  bgGradient?: string;   // Tailwind gradient class
 }
 
 export interface DrawOrder {

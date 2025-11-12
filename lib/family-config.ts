@@ -8,41 +8,57 @@ export const familyConfig: FamilyConfig = {
       id: "abuelos",
       name: "Los Abuelos",
       memberIds: ["abuela", "abuelo"],
+      bgColor: "bg-amber-50 dark:bg-amber-950/20",
+      bgGradient: "bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20",
     },
     {
       id: "pelaez-soni",
       name: "Los Pelaez-Soni",
       memberIds: ["beni", "laura", "ale"],
+      bgColor: "bg-blue-50 dark:bg-blue-950/20",
+      bgGradient: "bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20",
     },
     {
       id: "sanches-pelaez",
       name: "Los de Quito",
       memberIds: ["mimi", "matias"],
+      bgColor: "bg-purple-50 dark:bg-purple-950/20",
+      bgGradient: "bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/20 dark:to-violet-950/20",
     },
     {
       id: "silva-pelaez",
       name: "Los de EEUU",
       memberIds: ["vini", "tipi"],
+      bgColor: "bg-yellow-50 dark:bg-green-950/20",
+      bgGradient: "bg-gradient-to-br from-yellow-50 to-green-50 dark:from-rose-950/20 dark:to-red-950/20",
     },
     {
       id: "soni-cortez",
       name: "Los Soni Cortez",
       memberIds: ["carton", "irene", "marifer", "dani"],
+      bgColor: "bg-green-50 dark:bg-green-950/20",
+      bgGradient: "bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20",
     },
     {
       id: "perez-soni",
       name: "Los Perez",
       memberIds: ["hugo-grande", "mari", "huguito", "mariu"],
+      bgColor: "bg-orange-50 dark:bg-orange-950/20",
+      bgGradient: "bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20",
     },
     {
       id: "diana-olivia",
       name: "Familia de Olivia",
       memberIds: ["diana", "olivia"],
+      bgColor: "bg-pink-50 dark:bg-pink-950/20",
+      bgGradient: "bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/20 dark:to-rose-950/20",
     },
     {
       id: "magos",
       name: "Tia Magos",
       memberIds: ["magos"],
+      bgColor: "bg-indigo-50 dark:bg-indigo-950/20",
+      bgGradient: "bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-950/20 dark:to-violet-950/20",
     },
   ],
   members: [
@@ -104,5 +120,13 @@ export function getMembersInSameClic(memberId: string): string[] {
   if (!clic) return [];
   
   return clic.memberIds;
+}
+
+// Helper function to get clic theme by member ID
+export function getClicThemeByMemberId(memberId: string) {
+  const member = getMemberById(memberId);
+  if (!member) return null;
+  const clic = getClicById(member.clicId);
+  return clic;
 }
 

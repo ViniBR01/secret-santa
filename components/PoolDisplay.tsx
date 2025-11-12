@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Users, CheckCircle, Circle } from "lucide-react";
 import { FamilyMember } from "@/types";
 import Image from "next/image";
+import { getClicThemeByMemberId } from "@/lib/family-config";
 
 interface PoolDisplayProps {
   availableMembers: FamilyMember[];
@@ -66,7 +67,11 @@ export function PoolDisplay({
           </div>
           <div className="space-y-1 max-h-48 overflow-y-auto pr-2">
             <AnimatePresence mode="popLayout">
-              {availableMembers.map((member) => (
+              {availableMembers.map((member) => {
+                const clicTheme = getClicThemeByMemberId(member.id);
+                const clicBgClass = clicTheme?.bgColor || "bg-blue-50 dark:bg-blue-950/30";
+                
+                return (
                 <motion.div
                   key={member.id}
                   layout
@@ -79,22 +84,23 @@ export function PoolDisplay({
                   }}
                   className={`flex items-center gap-2 ${
                     compact ? "py-1 px-2" : "py-1.5 px-3"
-                  } bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800`}
+                  } ${clicBgClass} rounded-lg border-l-4 border-current`}
                 >
                   <Image
                     src={member.avatar}
                     alt={member.name}
                     width={32}
                     height={32}
-                    className={`${compact ? "w-6 h-6" : "w-8 h-8"} rounded-full object-cover flex-shrink-0 border border-blue-300 dark:border-blue-700`}
+                    className={`${compact ? "w-6 h-6" : "w-8 h-8"} rounded-full object-cover flex-shrink-0 border-2 border-current opacity-70`}
                   />
-                  <Circle className={`${compact ? "w-2 h-2" : "w-3 h-3"} text-blue-500 flex-shrink-0`} />
-                  <span className={`${compact ? "text-xs" : "text-sm"} text-gray-700 dark:text-gray-300`}>
+                  <Circle className={`${compact ? "w-2 h-2" : "w-3 h-3"} text-current flex-shrink-0`} />
+                  <span className={`${compact ? "text-xs" : "text-sm"} text-gray-700 dark:text-gray-300 font-medium`}>
                     {member.emoji && <span className="mr-1">{member.emoji}</span>}
                     {member.name}
                   </span>
                 </motion.div>
-              ))}
+                );
+              })}
             </AnimatePresence>
           </div>
         </div>
@@ -111,7 +117,11 @@ export function PoolDisplay({
           </div>
           <div className="space-y-1 max-h-48 overflow-y-auto pr-2">
             <AnimatePresence mode="popLayout">
-              {drawnMembers.map((member) => (
+              {drawnMembers.map((member) => {
+                const clicTheme = getClicThemeByMemberId(member.id);
+                const clicBgClass = clicTheme?.bgColor || "bg-gray-50 dark:bg-gray-950/30";
+                
+                return (
                 <motion.div
                   key={member.id}
                   layout
@@ -124,22 +134,23 @@ export function PoolDisplay({
                   }}
                   className={`flex items-center gap-2 ${
                     compact ? "py-1 px-2" : "py-1.5 px-3"
-                  } bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800 opacity-70`}
+                  } ${clicBgClass} rounded-lg border-l-4 border-current opacity-50`}
                 >
                   <Image
                     src={member.avatar}
                     alt={member.name}
                     width={32}
                     height={32}
-                    className={`${compact ? "w-6 h-6" : "w-8 h-8"} rounded-full object-cover flex-shrink-0 border border-green-300 dark:border-green-700 grayscale`}
+                    className={`${compact ? "w-6 h-6" : "w-8 h-8"} rounded-full object-cover flex-shrink-0 border-2 border-current grayscale`}
                   />
                   <CheckCircle className={`${compact ? "w-2 h-2" : "w-3 h-3"} text-green-500 flex-shrink-0`} />
-                  <span className={`${compact ? "text-xs" : "text-sm"} text-gray-600 dark:text-gray-400 line-through`}>
+                  <span className={`${compact ? "text-xs" : "text-sm"} text-gray-600 dark:text-gray-400 line-through font-medium`}>
                     {member.emoji && <span className="mr-1">{member.emoji}</span>}
                     {member.name}
                   </span>
                 </motion.div>
-              ))}
+                );
+              })}
             </AnimatePresence>
           </div>
         </div>
