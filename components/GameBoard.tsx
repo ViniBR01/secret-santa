@@ -15,6 +15,7 @@ import { YourTurnNotification } from "./YourTurnNotification";
 import { AdminPanel } from "./AdminPanel";
 import { AdminSetNextResult } from "./AdminSetNextResult";
 import { Button } from "./ui/button";
+import { ThemeToggle } from "./ThemeToggle";
 import { RotateCcw, PartyPopper, Sparkles, LogOut } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -191,7 +192,8 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
               <Gift className="w-10 h-10 sm:w-14 sm:h-14" />
               Intercambio 2025
             </h1>
-            <div className="flex-1 flex justify-end">
+            <div className="flex-1 flex justify-end gap-2">
+              <ThemeToggle />
               <Button
                 variant="ghost"
                 size="sm"

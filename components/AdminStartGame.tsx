@@ -2,6 +2,7 @@
 
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
+import { ThemeToggle } from "./ThemeToggle";
 import { Gift, LogOut, Play, Users, CheckCircle2, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { resetPusherClient } from "@/lib/pusher";
@@ -55,6 +56,9 @@ export function AdminStartGame() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-purple-950 dark:via-background dark:to-blue-950 flex items-center justify-center p-4">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <Card className="w-full max-w-2xl p-8 space-y-6">
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center gap-3">

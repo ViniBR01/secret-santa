@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { familyConfig } from "@/lib/family-config";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Gift, Users } from "lucide-react";
 
 export default function IdentifyPage() {
@@ -62,6 +63,9 @@ export default function IdentifyPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-green-50 dark:from-red-950 dark:via-background dark:to-green-950 flex items-center justify-center p-4">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <Card className="w-full max-w-md p-8 space-y-6">
         <div className="text-center space-y-4">
           <Gift className="w-16 h-16 mx-auto text-primary" />

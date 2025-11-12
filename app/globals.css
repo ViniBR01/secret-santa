@@ -3,65 +3,70 @@
 @tailwind utilities;
 
 @layer base {
+  /* Light Theme - Snowy Morning New Years */
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 346.8 77.2% 49.8%;
-    --primary-foreground: 355.7 100% 97.3%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --background: 210 40% 98%;
+    --foreground: 220 15% 15%;
+    --card: 210 30% 97%;
+    --card-foreground: 220 15% 15%;
+    --popover: 210 30% 97%;
+    --popover-foreground: 220 15% 15%;
+    --primary: 200 80% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 20% 92%;
+    --secondary-foreground: 220 15% 15%;
+    --muted: 210 20% 92%;
+    --muted-foreground: 220 10% 45%;
+    --accent: 190 85% 75%;
+    --accent-foreground: 220 15% 15%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 346.8 77.2% 49.8%;
+    --border: 210 25% 85%;
+    --input: 210 25% 85%;
+    --ring: 200 80% 55%;
     --radius: 0.5rem;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --chart-1: 200 80% 55%;
+    --chart-2: 190 85% 75%;
+    --chart-3: 220 60% 70%;
+    --chart-4: 180 50% 60%;
+    --chart-5: 210 70% 65%;
   }
 
+  /* Dark Theme - Cozy Fireplace Christmas */
   .dark {
-    --background: 20 14.3% 4.1%;
-    --foreground: 0 0% 95%;
-    --card: 24 9.8% 10%;
-    --card-foreground: 0 0% 95%;
-    --popover: 0 0% 9%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 346.8 77.2% 49.8%;
-    --primary-foreground: 355.7 100% 97.3%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 15%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 12 6.5% 15.1%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 85.7% 97.3%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 346.8 77.2% 49.8%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --background: 20 25% 8%;
+    --foreground: 35 20% 92%;
+    --card: 25 30% 12%;
+    --card-foreground: 35 20% 92%;
+    --popover: 20 35% 10%;
+    --popover-foreground: 35 20% 92%;
+    --primary: 15 85% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 25 20% 18%;
+    --secondary-foreground: 35 20% 92%;
+    --muted: 20 15% 20%;
+    --muted-foreground: 35 10% 60%;
+    --accent: 30 70% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 25 25% 22%;
+    --input: 25 25% 22%;
+    --ring: 15 85% 58%;
+    --chart-1: 15 85% 58%;
+    --chart-2: 30 70% 45%;
+    --chart-3: 355 75% 50%;
+    --chart-4: 45 80% 55%;
+    --chart-5: 10 70% 40%;
   }
 }
 
 @layer base {
   * {
     @apply border-border;
+    transition-property: color, background-color, border-color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
   }
   html {
     overflow-x: hidden;
@@ -72,7 +77,93 @@
   }
 }
 
-/* Festive New Years Animations */
+/* Holiday Theme Animations */
+
+/* Light Theme - Snowfall */
+@keyframes snowfall {
+  0% {
+    transform: translateY(-10px) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(100vh) translateX(50px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes snowflake-drift {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(20px);
+  }
+}
+
+@keyframes frost-shimmer {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+/* Dark Theme - Fireplace Embers */
+@keyframes ember-rise {
+  0% {
+    transform: translateY(10px) translateX(0) scale(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-50vh) translateX(15px) scale(0.8);
+  }
+  90% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(-20px) scale(0.3);
+    opacity: 0;
+  }
+}
+
+@keyframes fire-flicker {
+  0%, 100% {
+    opacity: 0.7;
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+    filter: brightness(1.3);
+  }
+}
+
+@keyframes warm-glow {
+  0%, 100% {
+    opacity: 0.4;
+    box-shadow: 0 0 10px rgba(255, 140, 0, 0.3);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 25px rgba(255, 100, 0, 0.5);
+  }
+}
+
+/* Legacy animations - keeping for backwards compatibility */
 @keyframes twinkle {
   0%, 100% {
     opacity: 0.3;
@@ -81,23 +172,6 @@
   50% {
     opacity: 1;
     transform: scale(1.2);
-  }
-}
-
-@keyframes float {
-  0% {
-    transform: translateY(0) rotate(0deg);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(-100vh) rotate(360deg);
-    opacity: 0;
   }
 }
 
@@ -122,76 +196,65 @@
   overflow: hidden;
 }
 
-/* Star elements */
-.star {
+/* Light Theme - Snowflakes */
+.snowflake {
   position: absolute;
-  background: radial-gradient(circle, #FFD700 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(200, 230, 255, 0.6) 40%, transparent 70%);
   border-radius: 50%;
-  animation: twinkle 3s ease-in-out infinite;
+  animation: snowfall linear infinite;
+  box-shadow: 0 0 8px rgba(200, 230, 255, 0.5);
 }
 
-.star::before {
+.snowflake::before,
+.snowflake::after {
   content: '';
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 150%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #FFD700, transparent);
-  opacity: 0.6;
+  background: rgba(255, 255, 255, 0.7);
 }
 
-.star::after {
-  content: '';
+.snowflake::before {
+  width: 120%;
+  height: 1px;
+  box-shadow: 0 0 3px rgba(200, 230, 255, 0.8);
+}
+
+.snowflake::after {
+  width: 1px;
+  height: 120%;
+  box-shadow: 0 0 3px rgba(200, 230, 255, 0.8);
+}
+
+.frost-sparkle {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(90deg);
-  width: 150%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #FFD700, transparent);
-  opacity: 0.6;
-}
-
-/* Confetti elements */
-.confetti {
-  position: absolute;
-  animation: float linear infinite;
-  opacity: 0;
-}
-
-.confetti::before {
-  content: '';
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-}
-
-.confetti-gold::before {
-  background: linear-gradient(135deg, #FFD700, #FFA500);
-}
-
-.confetti-silver::before {
-  background: linear-gradient(135deg, #C0C0C0, #E8E8E8);
-}
-
-.confetti-blue::before {
-  background: linear-gradient(135deg, #4169E1, #87CEEB);
-}
-
-.confetti-pink::before {
-  background: linear-gradient(135deg, #FF69B4, #FFB6C1);
-}
-
-/* Sparkle effect */
-.sparkle {
-  position: absolute;
-  background: radial-gradient(circle, #FFFFFF 0%, transparent 60%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(200, 230, 255, 0.4) 50%, transparent 70%);
   border-radius: 50%;
-  animation: shimmer 2s ease-in-out infinite;
-  opacity: 0.4;
+  animation: frost-shimmer 3s ease-in-out infinite;
+}
+
+/* Dark Theme - Embers */
+.ember {
+  position: absolute;
+  border-radius: 50%;
+  animation: ember-rise linear infinite;
+  background: radial-gradient(circle, rgba(255, 200, 100, 0.9) 0%, rgba(255, 100, 0, 0.7) 40%, transparent 70%);
+  box-shadow: 0 0 12px rgba(255, 140, 0, 0.6);
+}
+
+.ember-spark {
+  position: absolute;
+  background: radial-gradient(circle, rgba(255, 220, 150, 1) 0%, rgba(255, 140, 0, 0.8) 30%, transparent 60%);
+  border-radius: 50%;
+  animation: fire-flicker 1.5s ease-in-out infinite;
+}
+
+.warm-glow {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 180, 100, 0.3) 0%, rgba(255, 120, 50, 0.2) 40%, transparent 70%);
+  animation: warm-glow 4s ease-in-out infinite;
 }
 
 /* Gift Box Pattern Utilities */
