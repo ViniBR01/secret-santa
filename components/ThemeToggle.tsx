@@ -105,29 +105,33 @@ export function ThemeToggle() {
       variant="outline"
       size="icon"
       onClick={toggleTheme}
-      className="relative overflow-hidden transition-all duration-300 hover:scale-105"
+      className={`relative overflow-hidden transition-all duration-300 hover:scale-105 ${
+        isDark 
+          ? "bg-blue-100 dark:bg-blue-900/70 border-blue-300 dark:border-blue-700 hover:bg-blue-200 dark:hover:bg-blue-800/80" 
+          : "bg-orange-100 border-orange-300 hover:bg-orange-200"
+      }`}
       title={isDark ? "Switch to Snowy Morning (Light)" : "Switch to Cozy Fireplace (Dark)"}
     >
-      {/* Icons with smooth transition */}
+      {/* Icons with smooth transition - showing the theme you're switching TO */}
       <div className="relative w-full h-full flex items-center justify-center">
         <div
           className={`absolute transition-all duration-500 ${
             isDark 
-              ? "opacity-0 rotate-90 scale-0" 
-              : "opacity-100 rotate-0 scale-100"
+              ? "opacity-100 rotate-0 scale-100" 
+              : "opacity-0 rotate-90 scale-0"
           }`}
         >
-          <SnowflakeIcon className="h-[1.2rem] w-[1.2rem] text-blue-500" />
+          <SnowflakeIcon className="h-[1.2rem] w-[1.2rem] text-blue-600 dark:text-blue-300" />
         </div>
         
         <div
           className={`absolute transition-all duration-500 ${
             isDark 
-              ? "opacity-100 rotate-0 scale-100" 
-              : "opacity-0 -rotate-90 scale-0"
+              ? "opacity-0 -rotate-90 scale-0" 
+              : "opacity-100 rotate-0 scale-100"
           }`}
         >
-          <FireplaceIcon className="h-[1.2rem] w-[1.2rem] text-orange-500" />
+          <FireplaceIcon className="h-[1.2rem] w-[1.2rem] text-orange-600" />
         </div>
       </div>
       

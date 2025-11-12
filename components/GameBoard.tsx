@@ -192,17 +192,19 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
               <Gift className="w-10 h-10 sm:w-14 sm:h-14" />
               Intercambio 2025
             </h1>
-            <div className="flex-1 flex justify-end gap-2">
-              <ThemeToggle />
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLogout}
-                className="gap-2 whitespace-normal text-center leading-tight h-auto py-2 px-3"
-              >
-                <LogOut className="w-4 h-4 flex-shrink-0" />
-                <span className="max-w-[80px]">Cambiar Jugador</span>
-              </Button>
+            <div className="flex-1 flex justify-end">
+              <div className="flex flex-col gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="gap-2 whitespace-normal text-center leading-tight h-auto py-2 px-3"
+                >
+                  <LogOut className="w-4 h-4 flex-shrink-0" />
+                  <span className="max-w-[80px]">Cambiar Jugador</span>
+                </Button>
+                <ThemeToggle />
+              </div>
             </div>
           </div>
           <p className="text-lg sm:text-xl text-muted-foreground">

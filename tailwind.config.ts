@@ -6,6 +6,42 @@ const config: Config = {
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./lib/**/*.{js,ts,jsx,tsx}",
+  ],
+  safelist: [
+    // Ensure all family clic colors are included in dark mode
+    // Abuelos - amber/yellow
+    "dark:bg-amber-800/40",
+    "dark:from-amber-700/40",
+    "dark:to-yellow-600/40",
+    // Pelaez-Soni - orange/amber
+    "dark:bg-orange-800/40",
+    "dark:from-orange-700/40",
+    "dark:to-amber-600/40",
+    // Sanches-Pelaez - red/rose
+    "dark:bg-red-900/35",
+    "dark:from-red-800/40",
+    "dark:to-rose-700/40",
+    // Silva-Pelaez - yellow/amber
+    "dark:bg-yellow-800/35",
+    "dark:from-yellow-700/40",
+    "dark:to-amber-700/40",
+    // Soni-Cortez - lime/yellow
+    "dark:bg-lime-800/35",
+    "dark:from-lime-700/40",
+    "dark:to-yellow-700/35",
+    // Perez-Soni - orange/amber (original)
+    "dark:bg-orange-700/45",
+    "dark:from-orange-600/45",
+    "dark:to-amber-500/45",
+    // Diana-Olivia - rose/pink
+    "dark:bg-rose-800/40",
+    "dark:from-rose-700/45",
+    "dark:to-pink-600/40",
+    // Magos - amber/orange
+    "dark:bg-amber-900/35",
+    "dark:from-amber-800/40",
+    "dark:to-orange-700/35",
   ],
   theme: {
     extend: {
