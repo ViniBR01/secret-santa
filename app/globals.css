@@ -72,3 +72,125 @@
   }
 }
 
+/* Festive New Years Animations */
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes shimmer {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Festive overlay container */
+.festive-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* Star elements */
+.star {
+  position: absolute;
+  background: radial-gradient(circle, #FFD700 0%, transparent 70%);
+  border-radius: 50%;
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+.star::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 150%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #FFD700, transparent);
+  opacity: 0.6;
+}
+
+.star::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(90deg);
+  width: 150%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #FFD700, transparent);
+  opacity: 0.6;
+}
+
+/* Confetti elements */
+.confetti {
+  position: absolute;
+  animation: float linear infinite;
+  opacity: 0;
+}
+
+.confetti::before {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.confetti-gold::before {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+}
+
+.confetti-silver::before {
+  background: linear-gradient(135deg, #C0C0C0, #E8E8E8);
+}
+
+.confetti-blue::before {
+  background: linear-gradient(135deg, #4169E1, #87CEEB);
+}
+
+.confetti-pink::before {
+  background: linear-gradient(135deg, #FF69B4, #FFB6C1);
+}
+
+/* Sparkle effect */
+.sparkle {
+  position: absolute;
+  background: radial-gradient(circle, #FFFFFF 0%, transparent 60%);
+  border-radius: 50%;
+  animation: shimmer 2s ease-in-out infinite;
+  opacity: 0.4;
+}
+
