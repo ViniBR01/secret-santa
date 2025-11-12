@@ -61,7 +61,10 @@ export function AdminSetNextResult({
                 selectedGifteeId === member.id ? "text-purple-600" : "text-muted-foreground"
               }`} />
               <div className="flex-1">
-                <span className="text-lg font-semibold">{member.name}</span>
+                <span className="text-lg font-semibold">
+                  {member.emoji && <span className="mr-2">{member.emoji}</span>}
+                  {member.name}
+                </span>
                 <p className="text-xs text-muted-foreground">ID: {member.id}</p>
               </div>
             </button>

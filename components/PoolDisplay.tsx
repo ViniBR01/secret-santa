@@ -90,6 +90,7 @@ export function PoolDisplay({
                   />
                   <Circle className={`${compact ? "w-2 h-2" : "w-3 h-3"} text-blue-500 flex-shrink-0`} />
                   <span className={`${compact ? "text-xs" : "text-sm"} text-gray-700 dark:text-gray-300`}>
+                    {member.emoji && <span className="mr-1">{member.emoji}</span>}
                     {member.name}
                   </span>
                 </motion.div>
@@ -134,6 +135,7 @@ export function PoolDisplay({
                   />
                   <CheckCircle className={`${compact ? "w-2 h-2" : "w-3 h-3"} text-green-500 flex-shrink-0`} />
                   <span className={`${compact ? "text-xs" : "text-sm"} text-gray-600 dark:text-gray-400 line-through`}>
+                    {member.emoji && <span className="mr-1">{member.emoji}</span>}
                     {member.name}
                   </span>
                 </motion.div>

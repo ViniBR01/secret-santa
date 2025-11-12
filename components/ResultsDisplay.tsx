@@ -17,7 +17,9 @@ export function ResultsDisplay({ assignments }: ResultsDisplayProps) {
     return {
       drawerId,
       drawerName: drawer?.name || "Unknown",
+      drawerEmoji: drawer?.emoji,
       gifteeName: giftee?.name || "Unknown",
+      gifteeEmoji: giftee?.emoji,
     };
   });
 
@@ -37,10 +39,12 @@ export function ResultsDisplay({ assignments }: ResultsDisplayProps) {
           >
             <div className="flex items-center gap-2 sm:gap-3 flex-1">
               <span className="font-semibold text-sm sm:text-base text-primary min-w-[100px] sm:min-w-[150px]">
+                {assignment.drawerEmoji && <span className="mr-1">{assignment.drawerEmoji}</span>}
                 {assignment.drawerName}
               </span>
               <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 flex-shrink-0" />
               <span className="font-semibold text-sm sm:text-base text-green-700 dark:text-green-400 min-w-[100px] sm:min-w-[150px]">
+                {assignment.gifteeEmoji && <span className="mr-1">{assignment.gifteeEmoji}</span>}
                 {assignment.gifteeName}
               </span>
             </div>

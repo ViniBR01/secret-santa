@@ -214,7 +214,7 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
               </span>
             ) : playerInfo ? (
               <span className="px-3 py-1 bg-blue-500 text-white rounded-full">
-                👤 {playerInfo.name}
+                {playerInfo.emoji || "👤"} {playerInfo.name}
               </span>
             ) : null}
           </div>

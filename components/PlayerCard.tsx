@@ -74,6 +74,7 @@ export function PlayerCard({ playerState, isCurrentDrawer = false, gifteeName, o
           {/* Name and status */}
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-lg sm:text-xl truncate">
+              {member.emoji && <span className="mr-2">{member.emoji}</span>}
               {member.name}
               {status === "completed" && gifteeName && (
                 <span className="text-muted-foreground font-normal ml-2">
