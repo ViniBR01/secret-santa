@@ -194,3 +194,40 @@
   opacity: 0.4;
 }
 
+/* Gift Box Pattern Utilities */
+.gift-pattern-stripes {
+  background: repeating-linear-gradient(
+    45deg,
+    currentColor,
+    currentColor 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+.gift-pattern-dots {
+  background-image: radial-gradient(circle, currentColor 2px, transparent 2px);
+  background-size: 12px 12px;
+  background-position: 0 0, 6px 6px;
+}
+
+.gift-pattern-gradient {
+  position: relative;
+}
+
+.gift-pattern-gradient::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.3) 0%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  pointer-events: none;
+}
+

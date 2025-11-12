@@ -2,7 +2,8 @@
 
 import { useState, forwardRef } from "react";
 import { motion } from "framer-motion";
-import { Gift, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
+import { GiftBox1, GiftBox2, GiftBox3, GiftBox4, GiftBox5 } from "./GiftBoxIllustrations";
 
 interface MysterySelectorProps {
   optionCount: number;
@@ -12,12 +13,14 @@ interface MysterySelectorProps {
 }
 
 const BOX_PATTERNS = [
-  { color: "from-red-500 to-red-600", accent: "border-red-300" },
-  { color: "from-green-500 to-green-600", accent: "border-green-300" },
-  { color: "from-blue-500 to-blue-600", accent: "border-blue-300" },
-  { color: "from-purple-500 to-purple-600", accent: "border-purple-300" },
-  { color: "from-amber-500 to-amber-600", accent: "border-amber-300" },
+  { color: "from-red-500 to-red-600", accent: "border-red-300", primaryColor: "#ef4444", secondaryColor: "#dc2626" },
+  { color: "from-green-500 to-green-600", accent: "border-green-300", primaryColor: "#22c55e", secondaryColor: "#16a34a" },
+  { color: "from-blue-500 to-blue-600", accent: "border-blue-300", primaryColor: "#3b82f6", secondaryColor: "#2563eb" },
+  { color: "from-purple-500 to-purple-600", accent: "border-purple-300", primaryColor: "#a855f7", secondaryColor: "#9333ea" },
+  { color: "from-amber-500 to-amber-600", accent: "border-amber-300", primaryColor: "#f59e0b", secondaryColor: "#d97706" },
 ];
+
+const GIFT_BOX_COMPONENTS = [GiftBox1, GiftBox2, GiftBox3, GiftBox4, GiftBox5];
 
 export const MysterySelector = forwardRef<HTMLDivElement, MysterySelectorProps>(
   function MysterySelector(
@@ -116,15 +119,7 @@ export const MysterySelector = forwardRef<HTMLDivElement, MysterySelectorProps>(
 
               {/* Gift box */}
               <div className="relative bg-white dark:bg-slate-800 rounded-xl p-6 sm:p-8 shadow-lg border-4 border-white dark:border-slate-700">
-                {/* Decorative ribbon */}
-                <div
-                  className={`absolute inset-0 flex items-center justify-center pointer-events-none`}
-                >
-                  <div className="absolute w-full h-4 bg-gradient-to-r opacity-80 ${pattern.color}" />
-                  <div className="absolute h-full w-4 bg-gradient-to-b opacity-80 ${pattern.color}" />
-                </div>
-
-                {/* Gift icon */}
+                {/* Gift box illustration */}
                 <motion.div
                   animate={
                     isHovered && !isSelected
@@ -142,11 +137,22 @@ export const MysterySelector = forwardRef<HTMLDivElement, MysterySelectorProps>(
                   }
                   className="relative z-10"
                 >
-                  <Gift
-                    className={`w-16 h-16 sm:w-20 sm:h-20 ${
-                      isSelected ? "text-green-500" : "text-gray-600 dark:text-gray-300"
-                    } transition-colors`}
-                  />
+                  {(() => {
+                    const GiftBoxComponent = GIFT_BOX_COMPONENTS[index % GIFT_BOX_COMPONENTS.length];
+                    const isDarkMode = typeof window !== 'undefined' && 
+                      document.documentElement.classList.contains('dark');
+                    
+                    return (
+                      <GiftBoxComponent
+                        className={`w-16 h-16 sm:w-20 sm:h-20 transition-all ${
+                          isSelected ? "drop-shadow-lg" : ""
+                        }`}
+                        primaryColor={pattern.primaryColor}
+                        secondaryColor={pattern.secondaryColor}
+                        isDark={isDarkMode}
+                      />
+                    );
+                  })()}
                 </motion.div>
 
                 {/* Box number */}
