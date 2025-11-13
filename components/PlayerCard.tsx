@@ -79,11 +79,11 @@ export function PlayerCard({ playerState, isCurrentDrawer = false, gifteeName, o
 
           {/* Name and status */}
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-lg sm:text-xl truncate">
+            <h3 className="font-semibold text-lg sm:text-xl">
               {member.emoji && <span className="mr-2">{member.emoji}</span>}
               {member.name}
               {status === "completed" && gifteeName && (
-                <span className="text-muted-foreground font-normal ml-2">
+                <span className="block sm:inline text-sm sm:text-base text-muted-foreground font-normal sm:ml-2 mt-0.5 sm:mt-0">
                   → {gifteeName}
                 </span>
               )}

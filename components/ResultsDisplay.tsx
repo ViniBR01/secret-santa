@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getMemberById, getClicThemeByMemberId } from "@/lib/family-config";
-import { Gift, ArrowRight } from "lucide-react";
+import { Gift, ArrowRight, ArrowDown } from "lucide-react";
 
 interface ResultsDisplayProps {
   assignments: Record<string, string>; // drawerId -> gifteeId
@@ -39,15 +39,16 @@ export function ResultsDisplay({ assignments }: ResultsDisplayProps) {
         {assignmentsList.map((assignment) => (
           <div
             key={assignment.drawerId}
-            className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-white dark:bg-gray-900 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+            className="flex flex-col sm:flex-row items-center sm:justify-between gap-3 p-3 sm:p-4 bg-white dark:bg-gray-900 rounded-lg shadow-sm hover:shadow-md transition-shadow"
           >
-            <div className="flex items-center gap-2 sm:gap-3 flex-1">
-              <span className={`font-semibold text-sm sm:text-base text-primary min-w-[100px] sm:min-w-[150px] px-2 py-1 rounded ${assignment.drawerClicBg}`}>
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 w-full sm:flex-1">
+              <span className={`font-semibold text-sm sm:text-base text-primary w-full sm:w-auto sm:min-w-[150px] px-2 py-1 rounded text-center sm:text-left ${assignment.drawerClicBg}`}>
                 {assignment.drawerEmoji && <span className="mr-1">{assignment.drawerEmoji}</span>}
                 {assignment.drawerName}
               </span>
-              <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 flex-shrink-0" />
-              <span className={`font-semibold text-sm sm:text-base text-green-700 dark:text-green-400 min-w-[100px] sm:min-w-[150px] px-2 py-1 rounded ${assignment.gifteeClicBg}`}>
+              <ArrowDown className="w-5 h-5 sm:hidden text-green-600 flex-shrink-0" />
+              <ArrowRight className="hidden sm:block w-6 h-6 text-green-600 flex-shrink-0" />
+              <span className={`font-semibold text-sm sm:text-base text-green-700 dark:text-green-400 w-full sm:w-auto sm:min-w-[150px] px-2 py-1 rounded text-center sm:text-left ${assignment.gifteeClicBg}`}>
                 {assignment.gifteeEmoji && <span className="mr-1">{assignment.gifteeEmoji}</span>}
                 {assignment.gifteeName}
               </span>
