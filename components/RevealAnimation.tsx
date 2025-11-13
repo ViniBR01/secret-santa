@@ -258,9 +258,9 @@ export function RevealAnimation({ gifteeName, drawerName, gifteeAvatar, drawerAv
                         <Image
                           src={drawerAvatar}
                           alt={drawerName}
-                          width={96}
-                          height={96}
-                          className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-green-300 dark:border-green-700 shadow-lg"
+                          width={128}
+                          height={128}
+                          className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-green-300 dark:border-green-700 shadow-lg"
                         />
                       </motion.div>
                     )}
@@ -282,9 +282,9 @@ export function RevealAnimation({ gifteeName, drawerName, gifteeAvatar, drawerAv
                         <Image
                           src={gifteeAvatar}
                           alt={gifteeName}
-                          width={96}
-                          height={96}
-                          className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-emerald-300 dark:border-emerald-700 shadow-lg"
+                          width={128}
+                          height={128}
+                          className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-emerald-300 dark:border-emerald-700 shadow-lg"
                         />
                       </motion.div>
                     )}

@@ -71,9 +71,9 @@ export function PlayerCard({ playerState, isCurrentDrawer = false, gifteeName, o
             <Image
               src={member.avatar}
               alt={member.name}
-              width={48}
-              height={48}
-              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-secondary"
+              width={80}
+              height={80}
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-secondary"
             />
           </div>
 
