@@ -4,8 +4,12 @@ import { useEffect, useState } from "react";
 
 export function FestiveOverlay() {
   const [isDark, setIsDark] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // Mark component as mounted
+    setMounted(true);
+    
     // Check initial theme
     const checkTheme = () => {
       setIsDark(document.documentElement.classList.contains("dark"));
@@ -24,50 +28,50 @@ export function FestiveOverlay() {
   }, []);
 
   // Light theme - Snowfall particles
-  const snowflakes = Array.from({ length: 25 }, (_, i) => ({
+  const [snowflakes] = useState(() => Array.from({ length: 25 }, (_, i) => ({
     id: i,
     left: `${Math.random() * 100}%`,
     size: Math.random() * 4 + 3, // 3-7px
     duration: Math.random() * 8 + 10, // 10-18s
     delay: Math.random() * 5, // 0-5s delay
-  }));
+  })));
 
-  const frostSparkles = Array.from({ length: 12 }, (_, i) => ({
+  const [frostSparkles] = useState(() => Array.from({ length: 12 }, (_, i) => ({
     id: i,
     top: `${Math.random() * 100}%`,
     left: `${Math.random() * 100}%`,
     size: Math.random() * 5 + 3, // 3-8px
     delay: Math.random() * 3,
-  }));
+  })));
 
   // Dark theme - Ember particles
-  const embers = Array.from({ length: 20 }, (_, i) => ({
+  const [embers] = useState(() => Array.from({ length: 20 }, (_, i) => ({
     id: i,
     left: `${Math.random() * 100}%`,
     size: Math.random() * 4 + 2, // 2-6px
     duration: Math.random() * 6 + 8, // 8-14s
     delay: Math.random() * 4,
-  }));
+  })));
 
-  const emberSparks = Array.from({ length: 10 }, (_, i) => ({
+  const [emberSparks] = useState(() => Array.from({ length: 10 }, (_, i) => ({
     id: i,
     top: `${Math.random() * 30 + 60}%`, // Bottom 40% of screen
     left: `${Math.random() * 100}%`,
     size: Math.random() * 3 + 2, // 2-5px
     delay: Math.random() * 2,
-  }));
+  })));
 
-  const warmGlows = Array.from({ length: 8 }, (_, i) => ({
+  const [warmGlows] = useState(() => Array.from({ length: 8 }, (_, i) => ({
     id: i,
     top: `${Math.random() * 100}%`,
     left: `${Math.random() * 100}%`,
     size: Math.random() * 40 + 30, // 30-70px
     delay: Math.random() * 4,
-  }));
+  })));
 
   return (
     <div className="festive-overlay">
-      {!isDark ? (
+      {mounted && !isDark ? (
         // Light theme - Snowy Morning
         <>
           {/* Falling snowflakes */}
@@ -100,7 +104,7 @@ export function FestiveOverlay() {
             />
           ))}
         </>
-      ) : (
+      ) : mounted && isDark ? (
         // Dark theme - Cozy Fireplace
         <>
           {/* Rising embers */}
@@ -149,7 +153,7 @@ export function FestiveOverlay() {
             />
           ))}
         </>
-      )}
+      ) : null}
     </div>
   );
 }
