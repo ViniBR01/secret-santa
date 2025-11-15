@@ -68,6 +68,7 @@ export async function POST(request: Request) {
 
     // Create the draw result
     const drawResult: DrawResult = {
+      drawId: `${currentDrawerId}-${Date.now()}`,
       drawerId: currentDrawerId,
       gifteeId: selectedGifteeId,
       gifteeName: giftee.name,

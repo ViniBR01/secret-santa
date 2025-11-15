@@ -33,7 +33,7 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
   const gameState = useGameStore();
   const [showReveal, setShowReveal] = useState(false);
   const [showAdminSetResultDialog, setShowAdminSetResultDialog] = useState(false);
-  const lastShownDrawerIdRef = useRef<string | null>(null);
+  const shownDrawIdsRef = useRef<Set<string>>(new Set());
   const mysterySelectorRef = useRef<HTMLDivElement>(null);
   
   // Set up heartbeat for players (not for admin)
@@ -138,21 +138,24 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
     console.log('🔍 useEffect triggered:', {
       selectionPhase: gameState.selectionPhase,
       hasLastDrawResult: !!gameState.lastDrawResult,
-      drawerId: gameState.lastDrawResult?.drawerId,
-      lastShownDrawerId: lastShownDrawerIdRef.current,
+      drawId: gameState.lastDrawResult?.drawId,
+      alreadyShown: gameState.lastDrawResult?.drawId 
+        ? shownDrawIdsRef.current.has(gameState.lastDrawResult.drawId)
+        : false,
       showReveal,
     });
     
+    // Only show animation when we have a lastDrawResult that hasn't been shown yet
+    // Don't check selectionPhase because it can change multiple times during the reveal sequence
     if (
-      gameState.selectionPhase === 'revealing' && 
-      gameState.lastDrawResult && 
-      gameState.lastDrawResult.drawerId !== lastShownDrawerIdRef.current
+      gameState.lastDrawResult &&
+      !shownDrawIdsRef.current.has(gameState.lastDrawResult.drawId)
     ) {
-      console.log('✅ Setting showReveal to TRUE for drawer:', gameState.lastDrawResult.drawerId);
-      lastShownDrawerIdRef.current = gameState.lastDrawResult.drawerId;
+      console.log('✅ Setting showReveal to TRUE for draw:', gameState.lastDrawResult.drawId);
+      shownDrawIdsRef.current.add(gameState.lastDrawResult.drawId);
       setShowReveal(true);
     }
-  }, [gameState.selectionPhase, gameState.lastDrawResult]);
+  }, [gameState.lastDrawResult]);
 
   // Auto-scroll to mystery selector when selection phase begins
   useEffect(() => {
@@ -171,7 +174,7 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
     if (confirm("¿Estás seguro de que quieres reiniciar el sorteo del Intercambio?")) {
       gameState.resetGame();
       setShowReveal(false);
-      lastShownDrawerIdRef.current = null;
+      shownDrawIdsRef.current.clear();
     }
   };
 

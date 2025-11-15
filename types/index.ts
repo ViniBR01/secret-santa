@@ -67,6 +67,7 @@ export interface FamilyConfig {
 }
 
 export interface DrawResult {
+  drawId: string; // Unique identifier for this draw (prevents duplicate animations)
   drawerId: string;
   gifteeId: string;
   gifteeName: string;

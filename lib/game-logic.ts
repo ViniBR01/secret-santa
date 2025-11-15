@@ -132,6 +132,7 @@ export function executeDraw(gameState: GameState): DrawResult | null {
   }
 
   return {
+    drawId: `${drawerId}-${Date.now()}`,
     drawerId,
     gifteeId,
     gifteeName: giftee.name,
@@ -271,6 +272,7 @@ export function finalizeSelection(
   }
 
   return {
+    drawId: `${drawerId}-${Date.now()}`,
     drawerId,
     gifteeId,
     gifteeName: giftee.name,

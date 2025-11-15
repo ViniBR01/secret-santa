@@ -75,19 +75,18 @@ export function usePusher() {
     channel.bind(
       PUSHER_EVENTS.DRAW_EXECUTED,
       (data: { drawResult: DrawResult; newGameState: GameState }) => {
-        console.log("📨 Received DRAW_EXECUTED event");
-        // Update state and lastDrawResult atomically by merging them
-        setGameState({
-          ...data.newGameState,
-          // Temporarily set to revealing to trigger animation
-          selectionPhase: 'revealing',
+        console.log("📨 Received DRAW_EXECUTED event", {
+          drawId: data.drawResult.drawId,
+          drawerId: data.drawResult.drawerId,
+          gifteeName: data.drawResult.gifteeName,
+          timestamp: new Date().toISOString(),
         });
+        
+        // Set the draw result first (this will trigger the animation via useEffect in GameBoard)
         setLastDrawResult(data.drawResult);
         
-        // Then update to the final state after a brief moment
-        setTimeout(() => {
-          setGameState(data.newGameState);
-        }, 50);
+        // Then update the game state (the GameBoard useEffect will handle showing the animation)
+        setGameState(data.newGameState);
       }
     );
 
