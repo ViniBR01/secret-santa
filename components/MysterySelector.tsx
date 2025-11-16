@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, forwardRef } from "react";
+import { useState, useMemo, forwardRef } from "react";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
-import { GiftBox1, GiftBox2, GiftBox3, GiftBox4, GiftBox5 } from "./GiftBoxIllustrations";
+import { GiftBox1, GiftBox2, GiftBox3, GiftBox4, GiftBox5, GiftBox6, GiftBox7, GiftBox8, GiftBox9, GiftBox10 } from "./GiftBoxIllustrations";
 
 interface MysterySelectorProps {
   optionCount: number;
@@ -18,9 +18,14 @@ const BOX_PATTERNS = [
   { color: "from-blue-500 to-blue-600", accent: "border-blue-300", primaryColor: "#3b82f6", secondaryColor: "#2563eb" },
   { color: "from-purple-500 to-purple-600", accent: "border-purple-300", primaryColor: "#a855f7", secondaryColor: "#9333ea" },
   { color: "from-amber-500 to-amber-600", accent: "border-amber-300", primaryColor: "#f59e0b", secondaryColor: "#d97706" },
+  { color: "from-pink-500 to-pink-600", accent: "border-pink-300", primaryColor: "#ec4899", secondaryColor: "#db2777" },
+  { color: "from-cyan-500 to-cyan-600", accent: "border-cyan-300", primaryColor: "#06b6d4", secondaryColor: "#0891b2" },
+  { color: "from-orange-500 to-orange-600", accent: "border-orange-300", primaryColor: "#f97316", secondaryColor: "#ea580c" },
+  { color: "from-teal-500 to-teal-600", accent: "border-teal-300", primaryColor: "#14b8a6", secondaryColor: "#0d9488" },
+  { color: "from-rose-500 to-rose-600", accent: "border-rose-300", primaryColor: "#f43f5e", secondaryColor: "#e11d48" },
 ];
 
-const GIFT_BOX_COMPONENTS = [GiftBox1, GiftBox2, GiftBox3, GiftBox4, GiftBox5];
+const GIFT_BOX_COMPONENTS = [GiftBox1, GiftBox2, GiftBox3, GiftBox4, GiftBox5, GiftBox6, GiftBox7, GiftBox8, GiftBox9, GiftBox10];
 
 export const MysterySelector = forwardRef<HTMLDivElement, MysterySelectorProps>(
   function MysterySelector(
@@ -29,6 +34,20 @@ export const MysterySelector = forwardRef<HTMLDivElement, MysterySelectorProps>(
   ) {
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
+    // Randomize the order of patterns and components for each render
+    const randomizedIndices = useMemo(() => {
+      // Create an array of indices [0, 1, 2, ..., 9]
+      const indices = Array.from({ length: 10 }, (_, i) => i);
+      
+      // Fisher-Yates shuffle algorithm
+      for (let i = indices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indices[i], indices[j]] = [indices[j], indices[i]];
+      }
+      
+      return indices;
+    }, [optionCount]); // Re-shuffle when optionCount changes
 
     const handleBoxClick = (index: number) => {
       if (disabled || selectedIndex !== null) return;
@@ -61,7 +80,9 @@ export const MysterySelector = forwardRef<HTMLDivElement, MysterySelectorProps>(
       {/* Gift boxes grid */}
       <div className="flex flex-wrap justify-center gap-4 sm:gap-6 py-4">
         {Array.from({ length: optionCount }).map((_, index) => {
-          const pattern = BOX_PATTERNS[index % BOX_PATTERNS.length];
+          // Use randomized indices to select pattern and component
+          const randomIndex = randomizedIndices[index % randomizedIndices.length];
+          const pattern = BOX_PATTERNS[randomIndex];
           const isHovered = hoveredIndex === index;
           const isSelected = selectedIndex === index;
 
@@ -138,7 +159,7 @@ export const MysterySelector = forwardRef<HTMLDivElement, MysterySelectorProps>(
                   className="relative z-10"
                 >
                   {(() => {
-                    const GiftBoxComponent = GIFT_BOX_COMPONENTS[index % GIFT_BOX_COMPONENTS.length];
+                    const GiftBoxComponent = GIFT_BOX_COMPONENTS[randomIndex];
                     const isDarkMode = typeof window !== 'undefined' && 
                       document.documentElement.classList.contains('dark');
                     
