@@ -14,6 +14,10 @@ interface GameStore extends GameState {
   isGameReady: boolean; // Flag to track if game has been initialized
   isPusherReady: boolean; // Flag to track if Pusher is connected and subscribed
   
+  // Animation state (persistent across hot reloads)
+  shownDrawIds: Set<string>; // Track which draws have been shown
+  isAnimating: boolean; // Track if an animation is currently playing
+  
   // Actions
   initGame: () => Promise<void>;
   startGame: () => Promise<void>; // Admin action to start the game
@@ -26,6 +30,12 @@ interface GameStore extends GameState {
   resetGameLocal: () => void; // Reset game state locally without API call
   resetGame: () => Promise<void>; // Reset game and broadcast to all clients
   setPusherReady: (ready: boolean) => void;
+  
+  // Animation management actions
+  markDrawAsShown: (drawId: string) => void;
+  hasShownDraw: (drawId: string) => boolean;
+  setIsAnimating: (animating: boolean) => void;
+  clearShownDraws: () => void;
   
   // Session management actions
   updatePlayerSession: (playerId: string, session: PlayerSession) => void;
@@ -40,6 +50,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
   error: null,
   isGameReady: false,
   isPusherReady: false,
+  
+  // Animation state
+  shownDrawIds: new Set<string>(),
+  isAnimating: false,
 
   // Initialize/reset game
   initGame: async () => {
@@ -564,6 +578,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       lastDrawResult: null,
       error: null,
       isGameReady: true,
+      shownDrawIds: new Set<string>(),
+      isAnimating: false,
     });
   },
 
@@ -621,6 +637,30 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setPusherReady: (ready: boolean) => {
     console.log(`🔌 Pusher ready status: ${ready}`);
     set({ isPusherReady: ready });
+  },
+  
+  // Animation management
+  markDrawAsShown: (drawId: string) => {
+    console.log(`✅ Marking draw as shown: ${drawId}`);
+    set((state) => {
+      const newSet = new Set(state.shownDrawIds);
+      newSet.add(drawId);
+      return { shownDrawIds: newSet };
+    });
+  },
+  
+  hasShownDraw: (drawId: string) => {
+    return get().shownDrawIds.has(drawId);
+  },
+  
+  setIsAnimating: (animating: boolean) => {
+    console.log(`🎬 Animation state: ${animating ? 'STARTED' : 'ENDED'}`);
+    set({ isAnimating: animating });
+  },
+  
+  clearShownDraws: () => {
+    console.log(`🧹 Clearing all shown draws`);
+    set({ shownDrawIds: new Set<string>(), isAnimating: false });
   },
 }));
 

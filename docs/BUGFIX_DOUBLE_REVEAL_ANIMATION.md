@@ -11,23 +11,30 @@ After deploying to Vercel with multiple users online, the reveal animation would
 
 ## Root Cause Analysis
 
-The issue was caused by **duplicate Pusher event handling without deduplication**:
+The issue had **TWO separate root causes**:
 
-### Server-Side Event Broadcast
-The `/api/draw/select` endpoint triggers THREE separate Pusher events:
-1. `SELECTION_REVEALING` - Transitions to revealing phase
-2. `TURN_UNLOCKED` - Unlocks the turn
-3. `DRAW_EXECUTED` - Broadcasts the draw result
-
-### Race Condition (Initial Diagnosis - Incorrect)
-Initially thought: `DRAW_EXECUTED` event handler had a 50ms delay that could cause race conditions.
-
-**Actual Root Cause**: The `GameBoard.tsx` useEffect was triggering multiple times because:
+### Root Cause #1: Multiple useEffect Triggers (Fixed in First Iteration)
+The `GameBoard.tsx` useEffect was triggering multiple times because:
 1. Server sends `SELECTION_REVEALING` event → sets `selectionPhase: 'revealing'`
 2. Server sends `DRAW_EXECUTED` event → sets `lastDrawResult` 
 3. The `usePusher.ts` handler was updating state twice (once with temporary revealing phase, once with final state)
 4. The `GameBoard.tsx` useEffect depended on BOTH `selectionPhase` AND `lastDrawResult`
 5. Each state update caused the useEffect to trigger, even for the same draw
+
+**Result**: Animation trigger logic was being called multiple times for the same draw.
+
+### Root Cause #2: RevealAnimation Component Re-initialization (The Real Culprit!)
+Even after fixing the trigger logic, the animation was still playing twice because:
+
+1. `RevealAnimation` component's useEffect depends on `onComplete` callback (line 89)
+2. Every time `GameBoard` re-renders, a new `handleRevealComplete` function is created
+3. This new function reference causes `RevealAnimation`'s useEffect to re-run
+4. Re-running the useEffect **restarts all the setTimeout timers**
+5. This causes the card reveal phases to play again
+
+**Why confetti only showed once**: The `showConfetti` state persists in the component, so even though timers restart, confetti doesn't re-trigger.
+
+**Why card showed twice**: The `phase` state gets reset to "suspense" and goes through all phases again.
 
 ### No Deduplication
 The original `GameBoard.tsx` tracked only `lastShownDrawerId` (drawer ID), not unique draw IDs. This meant:
@@ -37,10 +44,11 @@ The original `GameBoard.tsx` tracked only `lastShownDrawerId` (drawer ID), not u
 ## Solution Implemented
 
 ### Strategy
-Make the animation **idempotent** by:
+Make the animation **idempotent** and **resilient to hot reloads** by:
 1. Adding a unique `drawId` to each `DrawResult`
-2. Tracking which specific draws have been shown (not just which drawer)
-3. Preventing the animation from triggering for already-shown draws
+2. Storing shown draw IDs in Zustand store (persists across hot reloads)
+3. Adding an animation lock to prevent overlapping animations
+4. Preventing the animation from triggering for already-shown draws
 
 ### Implementation Details
 
@@ -70,67 +78,151 @@ return {
 
 Also updated the admin route (`app/api/admin/set-next-result/route.ts`) to generate drawIds.
 
-#### 3. Track Shown Draw IDs (`components/GameBoard.tsx`)
+#### 3. Added Animation State to Zustand Store (`lib/store.ts`)
 
-**Replaced**:
+**Added to store interface**:
 ```typescript
-const lastShownDrawerIdRef = useRef<string | null>(null);
+interface GameStore extends GameState {
+  // ... existing fields ...
+  
+  // Animation state (persistent across hot reloads)
+  shownDrawIds: Set<string>; // Track which draws have been shown
+  isAnimating: boolean; // Track if an animation is currently playing
+  
+  // Animation management actions
+  markDrawAsShown: (drawId: string) => void;
+  hasShownDraw: (drawId: string) => boolean;
+  setIsAnimating: (animating: boolean) => void;
+  clearShownDraws: () => void;
+}
 ```
 
-**With**:
-```typescript
-const shownDrawIdsRef = useRef<Set<string>>(new Set());
-```
+**Why store instead of useRef:**
+- Zustand store persists across hot reloads in development
+- Store state survives component re-renders
+- Shared across all components (consistent state)
+- Can be accessed and modified from anywhere
 
-#### 4. Updated Animation Trigger Logic
+#### 4. Updated Animation Trigger Logic with Lock (`components/GameBoard.tsx`)
 
-**Modified useEffect** to only depend on `lastDrawResult` (not `selectionPhase`):
+**Modified useEffect** to use store-based tracking with animation lock:
 
 ```typescript
 useEffect(() => {
+  const drawId = gameState.lastDrawResult?.drawId;
+  const alreadyShown = drawId ? hasShownDraw(drawId) : false;
+  
   console.log('🔍 useEffect triggered:', {
     selectionPhase: gameState.selectionPhase,
     hasLastDrawResult: !!gameState.lastDrawResult,
-    drawId: gameState.lastDrawResult?.drawId,
-    alreadyShown: gameState.lastDrawResult?.drawId 
-      ? shownDrawIdsRef.current.has(gameState.lastDrawResult.drawId)
-      : false,
+    drawId,
+    alreadyShown,
+    isAnimating,
     showReveal,
   });
   
-  // Only show animation when we have a lastDrawResult that hasn't been shown yet
-  // Don't check selectionPhase because it can change multiple times during the reveal sequence
+  // Only show animation when:
+  // 1. We have a lastDrawResult
+  // 2. Haven't shown this draw yet (check store, not ref)
+  // 3. Not already animating (animation lock)
   if (
     gameState.lastDrawResult &&
-    !shownDrawIdsRef.current.has(gameState.lastDrawResult.drawId)
+    drawId &&
+    !alreadyShown &&
+    !isAnimating
   ) {
-    console.log('✅ Setting showReveal to TRUE for draw:', gameState.lastDrawResult.drawId);
-    shownDrawIdsRef.current.add(gameState.lastDrawResult.drawId);
+    console.log('✅ Setting showReveal to TRUE for draw:', drawId);
+    console.log('🔒 Acquiring animation lock');
+    
+    // Mark as shown and lock animation
+    markDrawAsShown(drawId);
+    setIsAnimating(true);
     setShowReveal(true);
+  } else if (gameState.lastDrawResult && drawId && alreadyShown) {
+    console.log('⏭️ Skipping animation - draw already shown:', drawId);
+  } else if (gameState.lastDrawResult && drawId && isAnimating) {
+    console.log('🔒 Skipping animation - already animating');
   }
-}, [gameState.lastDrawResult]); // Only depend on lastDrawResult, not selectionPhase
+}, [gameState.lastDrawResult, hasShownDraw, isAnimating, markDrawAsShown, setIsAnimating]);
 ```
 
 **Key changes:**
-- **Removed `selectionPhase` from dependency array** - this was causing duplicate triggers
-- Only trigger when `lastDrawResult` changes
-- Check if `drawId` exists in the Set before showing animation
-- Add `drawId` to Set when showing animation (prevents duplicates)
-- Log `drawId` for debugging
+- **Uses store-based `hasShownDraw()` instead of ref** - survives hot reloads
+- **Added animation lock check (`!isAnimating`)** - prevents overlapping animations
+- **Marks draw as shown immediately** - before animation starts
+- **Locks animation** - prevents duplicate triggers during animation
+- **Detailed logging** - shows why animation is shown or skipped
 
-#### 5. Updated Reset Logic
+#### 5. Updated handleRevealComplete to Release Lock
+
+```typescript
+const handleRevealComplete = () => {
+  console.log('🎉 Reveal animation complete, hiding overlay');
+  console.log('🔓 Releasing animation lock');
+  
+  setShowReveal(false);
+  setIsAnimating(false); // Release animation lock
+  
+  // Clear the last draw result after a short delay
+  setTimeout(() => {
+    console.log('🧹 Clearing lastDrawResult');
+    gameState.setLastDrawResult(null);
+  }, 100);
+};
+```
+
+**Key change**: Calls `setIsAnimating(false)` to release the lock when animation completes.
+
+#### 6. Updated Reset Logic
 
 ```typescript
 const handleReset = () => {
   if (confirm("¿Estás seguro de que quieres reiniciar el sorteo del Intercambio?")) {
     gameState.resetGame();
     setShowReveal(false);
-    shownDrawIdsRef.current.clear(); // Clear the Set
+    clearShownDraws(); // Clear from store instead of ref
   }
 };
 ```
 
-#### 6. Simplified Pusher Event Handler (`hooks/usePusher.ts`)
+**Key change**: Calls `clearShownDraws()` from store to clear all animation state.
+
+#### 7. Wrap handleRevealComplete in useCallback (`components/GameBoard.tsx`)
+
+**THE CRITICAL FIX** - Prevents RevealAnimation from re-initializing:
+
+```typescript
+// Import useCallback
+import { useState, useEffect, useRef, useCallback } from "react";
+
+// Extract stable function from store
+const setLastDrawResult = useGameStore((state) => state.setLastDrawResult);
+
+// Wrap the callback in useCallback with STABLE dependencies
+const handleRevealComplete = useCallback(() => {
+  console.log('🎉 Reveal animation complete, hiding overlay');
+  console.log('🔓 Releasing animation lock');
+  
+  setShowReveal(false);
+  setIsAnimating(false);
+  
+  setTimeout(() => {
+    console.log('🧹 Clearing lastDrawResult');
+    setLastDrawResult(null); // ✅ Use stable function from store
+  }, 100);
+}, [setIsAnimating, setLastDrawResult]); // ✅ Only stable function dependencies
+```
+
+**Why this is critical**:
+- Without `useCallback`, every GameBoard re-render creates a new `handleRevealComplete` function
+- **Critical mistake in first attempt**: Depending on `gameState` object which changes frequently
+- **The fix**: Extract only `setLastDrawResult` function - Zustand selectors are stable
+- With stable dependencies, function reference stays constant → useEffect doesn't re-run
+- This prevents `RevealAnimation`'s useEffect from restarting the setTimeout timers
+
+This was the final piece that fixed the visual double animation!
+
+#### 8. Simplified Pusher Event Handler (`hooks/usePusher.ts`)
 
 **Removed the double state update** that was causing duplicate triggers:
 
@@ -181,32 +273,45 @@ channel.bind(
 - State only updates once, not twice
 - Added logging for debugging
 
-## Why This Solution Works
+## Why This Enhanced Solution Works
 
 1. **Unique Identification**: Each draw gets a unique ID combining drawer + timestamp
    - Format: `${drawerId}-${Date.now()}`
    - Example: `"ale-1731724800123"`
 
-2. **Idempotent Animation**: The Set prevents the same draw from triggering animation twice
-   - First trigger: `drawId` not in Set → add to Set → show animation
-   - Subsequent triggers: `drawId` in Set → skip animation
+2. **Persistent State (Zustand Store)**: Animation state survives hot reloads
+   - `shownDrawIds` Set stored in Zustand, not component ref
+   - Persists across hot reloads in development
+   - Survives component re-renders
+   - Shared across all components
 
-3. **Single Trigger Point**: By only depending on `lastDrawResult` in the useEffect:
+3. **Animation Lock**: Prevents overlapping/duplicate animations
+   - `isAnimating` flag blocks new animations while one is playing
+   - Lock acquired when animation starts
+   - Lock released when animation completes
+   - Protects against race conditions
+
+4. **Triple Safety Check**: Animation only shows if ALL conditions are met:
+   - Has a `lastDrawResult` ✓
+   - Draw hasn't been shown yet (checked in store) ✓
+   - Not currently animating (animation lock) ✓
+
+5. **Single Trigger Point**: By only depending on `lastDrawResult` in the useEffect:
    - Animation only triggers when `lastDrawResult` changes
    - `selectionPhase` changes don't re-trigger the animation
    - Eliminates the double-trigger issue from multiple state updates
 
-4. **Simplified Event Handler**: The Pusher event handler only updates state once
+6. **Simplified Event Handler**: The Pusher event handler only updates state once
    - No temporary `selectionPhase: 'revealing'` manipulation
    - No 50ms setTimeout causing additional state updates
    - Clean, straightforward state update
 
-5. **Synchronized Behavior**: All clients receive the same `drawId` from server
+7. **Synchronized Behavior**: All clients receive the same `drawId` from server
    - Server generates the `drawId` once
    - All clients use the same deduplication key
    - Duplicate events are filtered consistently across all clients
 
-6. **Memory Efficient**: Set only stores strings
+8. **Memory Efficient**: Set only stores strings
    - Grows linearly with number of draws (max ~26 entries per game)
    - Cleared on game reset
 
@@ -222,14 +327,28 @@ channel.bind(
 3. `/Volumes/workplace/src/secret-santa/app/api/admin/set-next-result/route.ts`
    - Added `drawId` generation for admin-triggered draws
 
-4. `/Volumes/workplace/src/secret-santa/components/GameBoard.tsx`
-   - Replaced `lastShownDrawerIdRef` with `shownDrawIdsRef` Set
-   - Updated animation trigger useEffect to check Set
-   - Updated `handleReset()` to clear Set
-   - Enhanced logging with drawId
+4. `/Volumes/workplace/src/secret-santa/lib/store.ts` **(NEW - Enhanced Fix)**
+   - Added `shownDrawIds: Set<string>` to store state
+   - Added `isAnimating: boolean` flag to store state
+   - Added `markDrawAsShown()` action
+   - Added `hasShownDraw()` selector
+   - Added `setIsAnimating()` action
+   - Added `clearShownDraws()` action
+   - Updated `resetGameLocal()` to clear animation state
 
-5. `/Volumes/workplace/src/secret-santa/hooks/usePusher.ts`
-   - Added detailed logging to `DRAW_EXECUTED` event handler
+5. `/Volumes/workplace/src/secret-santa/components/GameBoard.tsx` **(ENHANCED)**
+   - Removed `shownDrawIdsRef` ref
+   - Added store selectors for animation state
+   - Updated useEffect to use store-based tracking
+   - Added animation lock check (`!isAnimating`)
+   - **Wrapped `handleRevealComplete()` in `useCallback`** (CRITICAL FIX)
+   - Updated `handleRevealComplete()` to release lock
+   - Updated `handleReset()` to use `clearShownDraws()`
+   - Enhanced logging with all animation states
+
+6. `/Volumes/workplace/src/secret-santa/hooks/usePusher.ts`
+   - Simplified `DRAW_EXECUTED` event handler (removed double update)
+   - Added detailed logging
 
 ## Testing Strategy
 

@@ -17,7 +17,7 @@ import { AdminSetNextResult } from "./AdminSetNextResult";
 import { Button } from "./ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { RotateCcw, PartyPopper, Sparkles, LogOut } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useHeartbeat } from "@/hooks/useHeartbeat";
 import { resetPusherClient } from "@/lib/pusher";
@@ -33,8 +33,15 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
   const gameState = useGameStore();
   const [showReveal, setShowReveal] = useState(false);
   const [showAdminSetResultDialog, setShowAdminSetResultDialog] = useState(false);
-  const shownDrawIdsRef = useRef<Set<string>>(new Set());
   const mysterySelectorRef = useRef<HTMLDivElement>(null);
+  
+  // Animation management from store (persistent across hot reloads)
+  const isAnimating = useGameStore((state) => state.isAnimating);
+  const hasShownDraw = useGameStore((state) => state.hasShownDraw);
+  const markDrawAsShown = useGameStore((state) => state.markDrawAsShown);
+  const setIsAnimating = useGameStore((state) => state.setIsAnimating);
+  const setLastDrawResult = useGameStore((state) => state.setLastDrawResult);
+  const clearShownDraws = useGameStore((state) => state.clearShownDraws);
   
   // Set up heartbeat for players (not for admin)
   useHeartbeat({ enabled: role === "player" && !!playerId });
@@ -78,16 +85,20 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
     gameState.makeSelection(index);
   };
 
-  // Handle reveal complete
-  const handleRevealComplete = () => {
+  // Handle reveal complete - useCallback to prevent RevealAnimation useEffect from re-running
+  const handleRevealComplete = useCallback(() => {
     console.log('🎉 Reveal animation complete, hiding overlay');
+    console.log('🔓 Releasing animation lock');
+    
     setShowReveal(false);
+    setIsAnimating(false); // Release animation lock
+    
     // Clear the last draw result after a short delay to prevent re-triggering
     setTimeout(() => {
       console.log('🧹 Clearing lastDrawResult');
-      gameState.setLastDrawResult(null);
+      setLastDrawResult(null); // Use stable function from store
     }, 100);
-  };
+  }, [setIsAnimating, setLastDrawResult]); // Only stable function dependencies
   
   // Handle logout
   const handleLogout = async () => {
@@ -135,27 +146,41 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
 
   // Show reveal animation when we have a new draw result
   useEffect(() => {
+    const drawId = gameState.lastDrawResult?.drawId;
+    const alreadyShown = drawId ? hasShownDraw(drawId) : false;
+    
     console.log('🔍 useEffect triggered:', {
       selectionPhase: gameState.selectionPhase,
       hasLastDrawResult: !!gameState.lastDrawResult,
-      drawId: gameState.lastDrawResult?.drawId,
-      alreadyShown: gameState.lastDrawResult?.drawId 
-        ? shownDrawIdsRef.current.has(gameState.lastDrawResult.drawId)
-        : false,
+      drawId,
+      alreadyShown,
+      isAnimating,
       showReveal,
     });
     
-    // Only show animation when we have a lastDrawResult that hasn't been shown yet
-    // Don't check selectionPhase because it can change multiple times during the reveal sequence
+    // Only show animation when:
+    // 1. We have a lastDrawResult
+    // 2. Haven't shown this draw yet (check store, not ref)
+    // 3. Not already animating (animation lock)
     if (
       gameState.lastDrawResult &&
-      !shownDrawIdsRef.current.has(gameState.lastDrawResult.drawId)
+      drawId &&
+      !alreadyShown &&
+      !isAnimating
     ) {
-      console.log('✅ Setting showReveal to TRUE for draw:', gameState.lastDrawResult.drawId);
-      shownDrawIdsRef.current.add(gameState.lastDrawResult.drawId);
+      console.log('✅ Setting showReveal to TRUE for draw:', drawId);
+      console.log('🔒 Acquiring animation lock');
+      
+      // Mark as shown and lock animation
+      markDrawAsShown(drawId);
+      setIsAnimating(true);
       setShowReveal(true);
+    } else if (gameState.lastDrawResult && drawId && alreadyShown) {
+      console.log('⏭️ Skipping animation - draw already shown:', drawId);
+    } else if (gameState.lastDrawResult && drawId && isAnimating) {
+      console.log('🔒 Skipping animation - already animating');
     }
-  }, [gameState.lastDrawResult]);
+  }, [gameState.lastDrawResult, hasShownDraw, isAnimating, markDrawAsShown, setIsAnimating]);
 
   // Auto-scroll to mystery selector when selection phase begins
   useEffect(() => {
@@ -174,7 +199,7 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
     if (confirm("¿Estás seguro de que quieres reiniciar el sorteo del Intercambio?")) {
       gameState.resetGame();
       setShowReveal(false);
-      shownDrawIdsRef.current.clear();
+      clearShownDraws(); // Clear from store instead of ref
     }
   };
 
