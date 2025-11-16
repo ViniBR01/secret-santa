@@ -21,7 +21,7 @@ export const familyConfig: FamilyConfig = {
     {
       id: "rebe-sola",
       name: "Rebe",
-      memberIds: ["rebe"],
+      memberIds: ["rebe", "tono", "leono"],
       bgColor: "bg-rose-50 dark:bg-rose-800/35",
       bgGradient: "bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-700/40 dark:to-pink-600/35",
     },
@@ -36,15 +36,15 @@ export const familyConfig: FamilyConfig = {
       id: "ale-sola",
       name: "Ale",
       memberIds: ["ale"],
-      bgColor: "bg-teal-50 dark:bg-teal-800/35",
-      bgGradient: "bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-700/40 dark:to-cyan-600/35",
+      bgColor: "bg-purple-50 dark:bg-red-900/35",
+      bgGradient: "bg-gradient-to-br from-purple-50 to-violet-50 dark:from-red-800/40 dark:to-rose-700/40",
     },
     {
       id: "sanches-pelaez",
       name: "Los de Quito",
       memberIds: ["raul", "mimi", "matias"],
-      bgColor: "bg-purple-50 dark:bg-red-900/35",
-      bgGradient: "bg-gradient-to-br from-purple-50 to-violet-50 dark:from-red-800/40 dark:to-rose-700/40",
+      bgColor: "bg-teal-50 dark:bg-teal-800/35",
+      bgGradient: "bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-700/40 dark:to-cyan-600/35",
     },
     {
       id: "silva-pelaez",
@@ -56,37 +56,16 @@ export const familyConfig: FamilyConfig = {
     {
       id: "soni-cortez",
       name: "Los Soni Cortez",
-      memberIds: ["carton", "irene", "dani"],
+      memberIds: ["carton", "irene", "dani", "marifer"],
       bgColor: "bg-green-50 dark:bg-lime-800/35",
       bgGradient: "bg-gradient-to-br from-green-50 to-emerald-50 dark:from-lime-700/40 dark:to-yellow-700/35",
     },
     {
-      id: "marifer-sola",
-      name: "Marifer",
-      memberIds: ["marifer"],
-      bgColor: "bg-fuchsia-50 dark:bg-fuchsia-800/35",
-      bgGradient: "bg-gradient-to-br from-fuchsia-50 to-purple-50 dark:from-fuchsia-700/40 dark:to-purple-600/35",
-    },
-    {
       id: "perez-soni",
       name: "Los Perez",
-      memberIds: ["hugo-grande", "mari"],
+      memberIds: ["hugo-grande", "mari", "huguito", "mariu"],
       bgColor: "bg-orange-50 dark:bg-orange-700/45",
       bgGradient: "bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-600/45 dark:to-amber-500/45",
-    },
-    {
-      id: "hugo-solo",
-      name: "Huguito",
-      memberIds: ["huguito"],
-      bgColor: "bg-sky-50 dark:bg-sky-800/35",
-      bgGradient: "bg-gradient-to-br from-sky-50 to-blue-50 dark:from-sky-700/40 dark:to-blue-600/35",
-    },
-    {
-      id: "mariu-sola",
-      name: "Mariu",
-      memberIds: ["mariu"],
-      bgColor: "bg-lime-50 dark:bg-lime-800/35",
-      bgGradient: "bg-gradient-to-br from-lime-50 to-green-50 dark:from-lime-700/40 dark:to-green-600/35",
     },
     {
       id: "diana-olivia",
@@ -94,14 +73,7 @@ export const familyConfig: FamilyConfig = {
       memberIds: ["dali", "diana", "olivia"],
       bgColor: "bg-pink-50 dark:bg-rose-800/40",
       bgGradient: "bg-gradient-to-br from-pink-50 to-rose-50 dark:from-rose-700/45 dark:to-pink-600/40",
-    },
-    {
-      id: "tono-leono",
-      name: "Toño y Leonora",
-      memberIds: ["tono", "leono"],
-      bgColor: "bg-violet-50 dark:bg-violet-800/35",
-      bgGradient: "bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-700/40 dark:to-indigo-600/35",
-    },
+    }
   ],
   members: [
     // Los Abuelos
@@ -109,8 +81,6 @@ export const familyConfig: FamilyConfig = {
     { id: "abuela", name: "bis. Maricela", clicId: "abuelos", avatar: "/avatars/abuela.png", emoji: "👵🏼" },
     // Tia Magos
     { id: "magos", name: "Magos", clicId: "magos", avatar: "/avatars/magos.png", emoji: "🌼" },
-    // Rebeca
-    { id: "rebe", name: "Rebe", clicId: "rebe-sola", avatar: "/avatars/rebe.png", emoji: "🗞️" },
     // Los Pelaez-Soni
     { id: "beni", name: "Benigno", clicId: "pelaez-soni", avatar: "/avatars/beni.png", emoji: "🍻" },
     { id: "laura", name: "Laura", clicId: "pelaez-soni", avatar: "/avatars/laura.png", emoji: "🐶" },
@@ -126,22 +96,21 @@ export const familyConfig: FamilyConfig = {
     // Los Soni Cortez
     { id: "carton", name: "Cartón", clicId: "soni-cortez", avatar: "/avatars/carlos.png", emoji: "🧊" },
     { id: "irene", name: "Irene", clicId: "soni-cortez", avatar: "/avatars/irene.png", emoji: "🙄" },
-    { id: "marifer", name: "Marifer", clicId: "marifer-sola", avatar: "/avatars/marifer2.png", emoji: "💃" },
+    { id: "marifer", name: "Marifer", clicId: "soni-cortez", avatar: "/avatars/marifer2.png", emoji: "💃" },
     { id: "dani", name: "Dani", clicId: "soni-cortez", avatar: "/avatars/dani.jpeg", emoji: "🩰" },
     // Los Perez
     { id: "hugo-grande", name: "Hugo", clicId: "perez-soni", avatar: "/avatars/hugo.png", emoji: "⚙️" },
     { id: "mari", name: "Mari", clicId: "perez-soni", avatar: "/avatars/mari.png", emoji: "📅" },
-    // Hugo Perez Jr.
-    { id: "huguito", name: "Huguito", clicId: "hugo-solo", avatar: "/avatars/huguito.png", emoji: "🎮" },
-    // Mariu Perez
-    { id: "mariu", name: "Mariu", clicId: "mariu-sola", avatar: "/avatars/mariu.png", emoji: "🤸🏻‍♀️" },
+    { id: "huguito", name: "Huguito", clicId: "perez-soni", avatar: "/avatars/huguito.png", emoji: "🎮" },
+    { id: "mariu", name: "Mariu", clicId: "perez-soni", avatar: "/avatars/mariu.png", emoji: "🤸🏻‍♀️" },
     // Familia de Olivia
     { id: "dali", name: "Dalí", clicId: "diana-olivia", avatar: "/avatars/dali.png", emoji: "ψ" },
     { id: "diana", name: "Diana", clicId: "diana-olivia", avatar: "/avatars/diana.png", emoji: "🍌" },
     { id: "olivia", name: "Baby Olivia", clicId: "diana-olivia", avatar: "/avatars/olivia.png", emoji: "👶" },
-    // Tono y Leonora
-    { id: "tono", name: "Toño", clicId: "tono-leono", avatar: "/avatars/tono.png", emoji: "🎼" },
-    { id: "leono", name: "Leonora", clicId: "tono-leono", avatar: "/avatars/leonora.png", emoji: "🦄" }
+    // Tono y Leonora y Rebeca
+    { id: "rebe", name: "Rebe", clicId: "rebe-sola", avatar: "/avatars/rebe.png", emoji: "🗞️" },
+    { id: "tono", name: "Toño", clicId: "rebe-sola", avatar: "/avatars/tono.png", emoji: "🎼" },
+    { id: "leono", name: "Leonora", clicId: "rebe-sola", avatar: "/avatars/leonora.png", emoji: "🦄" }
   ],
   // Order in which family members will draw
   drawOrder: [
