@@ -110,7 +110,7 @@ export const familyConfig: FamilyConfig = {
     // Tono y Leonora y Rebeca
     { id: "rebe", name: "Rebe", clicId: "rebe-sola", avatar: "/avatars/rebe.png", emoji: "🗞️" },
     { id: "tono", name: "Toño", clicId: "rebe-sola", avatar: "/avatars/tono.png", emoji: "🎼" },
-    { id: "leono", name: "Leonora", clicId: "rebe-sola", avatar: "/avatars/leonora.png", emoji: "🦄" }
+    { id: "leono", name: "Leonora", clicId: "rebe-sola", avatar: "/avatars/leonora.jpeg", emoji: "🦄" }
   ],
   // Order in which family members will draw
   drawOrder: [
