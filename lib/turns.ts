@@ -81,7 +81,7 @@ function commitDraw(s: GameState, gifteeId: string, selectedIndex: number | null
     gifteeName: giftee.name,
   };
   const next = updateGameStateAfterDraw(s, draw);
-  return { ...next, selectedIndex, turnLocked: false };
+  return { ...next, selectedIndex, turnLocked: false, lastDrawBulk: false };
 }
 
 /** Pick a mystery box. A retry of an already-committed pick returns the state unchanged. */
@@ -137,6 +137,29 @@ export function randomDraw(s: GameState, ref: TurnRef): GameState {
   const result = executeDraw(s);
   if (!result) throw new GameError("No valid options available", 400, s);
   return commitDraw(s, result.gifteeId, null);
+}
+
+/**
+ * Admin "finish the draw": assign every remaining drawer in ONE atomic step.
+ * Either the whole rest of the draw is committed or nothing is, so a dropped
+ * connection can never leave the game half-finished. If a turn was already
+ * open (boxes showing), it is drawn too. Idempotent: on a completed game it is
+ * a no-op, so a double click or a retry is harmless.
+ */
+export function drawAllRemaining(s: GameState, ref: Pick<TurnRef, "gameId">): GameState {
+  if (ref.gameId && ref.gameId !== s.gameId) {
+    throw new GameError("The game was reset. Reloading…", 409, s);
+  }
+  if (s.isComplete) return s;
+  if (s.gameLifecycle === "not_started") throw new GameError("The game hasn't started yet", 409, s);
+
+  let next = s;
+  while (!next.isComplete) {
+    const result = executeDraw(next); // only picks options that keep the draw completable
+    if (!result) throw new GameError("No valid options available", 400, s);
+    next = commitDraw(next, result.gifteeId, null);
+  }
+  return { ...next, lastDrawBulk: true };
 }
 
 export function startGame(s: GameState): GameState {

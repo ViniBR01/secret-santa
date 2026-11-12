@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { FestiveOverlay } from "@/components/FestiveOverlay";
@@ -8,11 +8,16 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Secret Santa - Family Gift Exchange",
   description: "Organize your family Secret Santa gift exchange with automatic draw validation",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 5,
-  },
+};
+
+// Separate viewport export (metadata.viewport is deprecated in Next 15).
+// viewportFit "cover" enables env(safe-area-inset-*) on iPhones, which the
+// floating admin panel uses to stay clear of the home indicator.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

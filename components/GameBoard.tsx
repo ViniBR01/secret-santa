@@ -4,7 +4,6 @@ import { useGameStore } from "@/lib/store";
 import { getPlayerStates, getCurrentDrawer } from "@/lib/game-logic";
 import { familyConfig, getMemberById, getConfettiColorsForMember } from "@/lib/family-config";
 import { PlayerCard } from "./PlayerCard";
-import { QuickDrawAllButton } from "./QuickDrawAllButton";
 import { ResultsDisplay } from "./ResultsDisplay";
 import { RevealAnimation } from "./RevealAnimation";
 import { NarrativePrompt } from "./NarrativePrompt";
@@ -16,7 +15,7 @@ import { AdminPanel } from "./AdminPanel";
 import { AdminSetNextResult } from "./AdminSetNextResult";
 import { Button } from "./ui/button";
 import { ThemeToggle } from "./ThemeToggle";
-import { RotateCcw, PartyPopper, Sparkles, LogOut } from "lucide-react";
+import { PartyPopper, Sparkles, LogOut } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useHeartbeat } from "@/hooks/useHeartbeat";
@@ -184,18 +183,15 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
     }
   }, [gameState.selectionPhase]);
 
-  const handleReset = () => {
-    if (confirm("¿Estás seguro de que quieres reiniciar el sorteo del Intercambio?")) {
-      gameState.resetGame();
-      setShowReveal(false);
-      clearShownDraws(); // Clear from store instead of ref
-    }
+  // Confirmation is handled inside AdminPanel.
+  const handleReset = async () => {
+    setShowReveal(false);
+    clearShownDraws();
+    await gameState.resetGame();
   };
 
   const handleQuickDrawAll = async () => {
-    if (confirm("Esto completará todos los sorteos restantes automáticamente. ¿Continuar?")) {
-      await gameState.quickDrawAll();
-    }
+    await gameState.quickDrawAll();
   };
 
   return (
@@ -384,16 +380,6 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
                 </div>
               </div>
 
-              {/* Quick draw all button (admin only) */}
-              {isAdmin && (
-                <div className="flex justify-center pt-4">
-                  <QuickDrawAllButton
-                    onClick={handleQuickDrawAll}
-                    disabled={gameState.isComplete || gameState.pendingAction}
-                    currentDrawerIndex={gameState.currentDrawerIndex}
-                  />
-                </div>
-              )}
             </div>
 
             {/* Right column: Pool display (1/3 width on desktop, hidden on mobile) */}
@@ -405,20 +391,6 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
                 />
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Reset button (admin only) */}
-        {isAdmin && (
-          <div className="flex justify-center pt-4">
-            <Button
-              variant="outline"
-              onClick={handleReset}
-              className="gap-2"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Reiniciar Juego
-            </Button>
           </div>
         )}
 
@@ -439,6 +411,9 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
           <AdminPanel
             gameState={gameState}
             onSetNextResult={handleAdminSetNextResult}
+            onDrawAll={handleQuickDrawAll}
+            onReset={handleReset}
+            busy={gameState.pendingAction}
             currentPlayerId={playerId}
           />
         )}

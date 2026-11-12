@@ -22,6 +22,7 @@ import * as optionsRoute from "@/app/api/draw/options/route";
 import * as selectRoute from "@/app/api/draw/select/route";
 import * as startGameRoute from "@/app/api/admin/start-game/route";
 import * as setNextRoute from "@/app/api/admin/set-next-result/route";
+import * as drawAllRoute from "@/app/api/admin/draw-all/route";
 import * as identifyRoute from "@/app/api/session/identify/route";
 import * as adminRoute from "@/app/api/session/admin/route";
 import * as heartbeatRoute from "@/app/api/session/heartbeat/route";
@@ -36,6 +37,7 @@ const ROUTES: Record<string, Partial<Record<string, Handler>>> = {
   "/api/draw/select": selectRoute as never,
   "/api/admin/start-game": startGameRoute as never,
   "/api/admin/set-next-result": setNextRoute as never,
+  "/api/admin/draw-all": drawAllRoute as never,
   "/api/session/identify": identifyRoute as never,
   "/api/session/admin": adminRoute as never,
   "/api/session/heartbeat": heartbeatRoute as never,

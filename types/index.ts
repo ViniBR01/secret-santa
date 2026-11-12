@@ -52,6 +52,8 @@ export interface GameState {
   version: number;
   /** The most recent draw, so a client that missed the realtime event can still show it */
   lastDraw: DrawResult | null;
+  /** True when lastDraw came from the admin finishing the whole draw at once (no reveal animation) */
+  lastDrawBulk?: boolean;
 
   currentDrawerIndex: number;
   assignments: Record<string, string>; // drawerId -> gifteeId

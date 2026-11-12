@@ -32,13 +32,12 @@ export function AdminStartGame() {
     setIsStarting(true);
     try {
       await gameState.startGame();
-      console.log("✅ DEBUG - startGame() completed");
-      console.log("🔍 DEBUG - Current gameLifecycle after start:", gameState.gameLifecycle);
     } catch (err) {
       console.error("Error starting game:", err);
-      setIsStarting(false);
     }
-    // Don't set isStarting to false - let the state update handle the transition
+    // On success this screen unmounts (lifecycle -> in_progress). If we're still
+    // here the start failed (e.g. network), so let the admin try again.
+    if (useGameStore.getState().gameLifecycle === "not_started") setIsStarting(false);
   };
 
   const handleResetGame = () => {

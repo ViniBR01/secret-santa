@@ -170,13 +170,15 @@ export const createGameStoreState = (
     },
 
     quickDrawAll: async () => {
-      // Each step uses the state returned by the previous one; a conflict resyncs and stops.
-      for (let guard = 0; guard < 200 && !get().isComplete; guard++) {
-        const res = await act("/api/draw", turnRef());
-        if (!res.ok) {
-          if (res.error === "network") continue; // resynced; try the (new) current turn
-          return;
-        }
+      // One atomic request: the server draws everyone left, or nothing.
+      // Safe to retry after a timeout (it's a no-op once the game is complete).
+      const body = { gameId: get().gameId };
+      let res = await act("/api/admin/draw-all", body);
+      if (!res.ok && res.error === "network" && !get().isComplete) {
+        res = await act("/api/admin/draw-all", body);
+      }
+      if (!res.ok && res.error && res.error !== "busy" && res.error !== "network") {
+        set({ error: res.error });
       }
     },
 
@@ -216,6 +218,7 @@ export const createGameStoreState = (
       const sameGame = state.gameId === current.gameId;
       const newDraw =
         opts.animate !== false &&
+        !state.lastDrawBulk && // finishing the whole draw at once: go straight to results
         state.lastDraw &&
         state.lastDraw.drawId !== current.lastDraw?.drawId &&
         !current.shownDrawIds.has(state.lastDraw.drawId);
