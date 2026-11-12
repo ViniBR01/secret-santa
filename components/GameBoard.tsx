@@ -123,24 +123,13 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
   
   // Admin action: Confirm set next result
   const handleConfirmSetNextResult = async (selectedGifteeId: string) => {
-    try {
-      const response = await fetch("/api/admin/set-next-result", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ gameState, selectedGifteeId }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        alert(`Error al establecer el próximo resultado: ${error.error}`);
-        return;
-      }
-
+    const result = await gameState.adminSetNextResult(selectedGifteeId);
+    if (result.ok) {
       setShowAdminSetResultDialog(false);
-      // State will be updated via Pusher
-    } catch (err) {
-      console.error("Error setting next result:", err);
+    } else if (result.error === "network") {
       alert("Error al establecer el próximo resultado. Por favor, intenta de nuevo.");
+    } else {
+      alert(`Error al establecer el próximo resultado: ${result.error}`);
     }
   };
 
@@ -303,6 +292,7 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
                       <Button
                         size="lg"
                         onClick={handleStartTurn}
+                        disabled={gameState.pendingAction}
                         className="min-w-[250px] shadow-lg hover:shadow-xl transition-all text-lg py-6"
                       >
                         <Sparkles className="w-6 h-6 mr-2" />
@@ -326,9 +316,11 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
                   {canInteract ? (
                     <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl p-6 sm:p-8">
                       <MysterySelector
+                        key={`${gameState.gameId}:${gameState.currentDrawerIndex}`}
                         ref={mysterySelectorRef}
                         optionCount={gameState.currentOptions.length}
                         onSelect={handleSelection}
+                        disabled={gameState.pendingAction}
                         currentDrawerName={currentDrawer.name}
                       />
                     </div>
@@ -397,7 +389,7 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
                 <div className="flex justify-center pt-4">
                   <QuickDrawAllButton
                     onClick={handleQuickDrawAll}
-                    disabled={gameState.isComplete}
+                    disabled={gameState.isComplete || gameState.pendingAction}
                     currentDrawerIndex={gameState.currentDrawerIndex}
                   />
                 </div>

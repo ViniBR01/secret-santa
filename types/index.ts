@@ -41,6 +41,18 @@ export interface SessionData {
 }
 
 export interface GameState {
+  /**
+   * Concurrency control. The server is the single source of truth:
+   * - `gameId`/`createdAt` identify one game (a reset starts a new one)
+   * - `version` increases by one on every committed change
+   * Clients only ever apply a state that is newer than what they have.
+   */
+  gameId: string;
+  createdAt: number;
+  version: number;
+  /** The most recent draw, so a client that missed the realtime event can still show it */
+  lastDraw: DrawResult | null;
+
   currentDrawerIndex: number;
   assignments: Record<string, string>; // drawerId -> gifteeId
   availableGiftees: string[];

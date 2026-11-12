@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, forwardRef } from "react";
+import { useState, useMemo, forwardRef, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { GiftBox1, GiftBox2, GiftBox3, GiftBox4, GiftBox5, GiftBox6, GiftBox7, GiftBox8, GiftBox9, GiftBox10 } from "./GiftBoxIllustrations";
@@ -48,6 +48,14 @@ export const MysterySelector = forwardRef<HTMLDivElement, MysterySelectorProps>(
       
       return indices;
     }, [optionCount]); // Re-shuffle when optionCount changes
+
+    // If the request finished but we are still on this turn (error / conflict),
+    // unlock the boxes so the player can try again instead of being stuck.
+    const wasDisabled = useRef(disabled);
+    useEffect(() => {
+      if (wasDisabled.current && !disabled) setSelectedIndex(null);
+      wasDisabled.current = disabled;
+    }, [disabled]);
 
     const handleBoxClick = (index: number) => {
       if (disabled || selectedIndex !== null) return;

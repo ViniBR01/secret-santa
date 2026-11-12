@@ -31,6 +31,24 @@ For multi-device real-time synchronization:
    - secret
    - cluster
 
+## Step 2b: Add a shared state store (REQUIRED on Vercel)
+
+Vercel runs the API as serverless functions. When many people use the site at
+once, requests are spread over several instances that **do not share memory**.
+Without a shared store each instance has its own copy of the game, which
+causes the "everyone sees something different / the game reset itself" bugs.
+
+1. In the Vercel project, open **Storage → Marketplace → Upstash for Redis**
+   (free tier is plenty) and connect it to the project.
+2. This adds `KV_REST_API_URL` and `KV_REST_API_TOKEN` (or
+   `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`) to the environment.
+   Either pair works; nothing else to configure.
+3. Redeploy.
+
+Without these variables the app falls back to in-process memory. That is
+fine for `npm run dev` or a single `npm start` server, and it logs a loud
+warning when running on Vercel.
+
 ## Step 3: Deploy to Vercel
 
 ### Option A: Deploy via Vercel Dashboard

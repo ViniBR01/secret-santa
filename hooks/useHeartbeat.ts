@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
+import { useGameStore } from "@/lib/store";
 
 const HEARTBEAT_INTERVAL = 30000; // 30 seconds
 
@@ -13,43 +14,17 @@ interface UseHeartbeatOptions {
  * to track player online status
  */
 export function useHeartbeat({ enabled }: UseHeartbeatOptions) {
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
   useEffect(() => {
     if (!enabled) {
-      // Clear any existing interval if disabled
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
       return;
     }
 
-    // Send initial heartbeat
+    const sendHeartbeat = () => useGameStore.getState().sendHeartbeat();
+
+    // Send initial heartbeat, then periodically
     sendHeartbeat();
+    const interval = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL);
 
-    // Set up interval for periodic heartbeats
-    intervalRef.current = setInterval(() => {
-      sendHeartbeat();
-    }, HEARTBEAT_INTERVAL);
-
-    // Cleanup on unmount
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
+    return () => clearInterval(interval);
   }, [enabled]);
-
-  const sendHeartbeat = async () => {
-    try {
-      await fetch("/api/session/heartbeat", {
-        method: "POST",
-      });
-    } catch (error) {
-      console.error("Error sending heartbeat:", error);
-      // Silently fail - heartbeat is not critical
-    }
-  };
 }
-

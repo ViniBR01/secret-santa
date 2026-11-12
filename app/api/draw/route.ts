@@ -1,46 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { pusherServer, PUSHER_CHANNEL, PUSHER_EVENTS } from "@/lib/pusher";
-import { executeDraw, updateGameStateAfterDraw } from "@/lib/game-logic";
-import { GameState } from "@/types";
-import { setGameState } from "@/lib/server-state";
+import { getSessionFromRequest } from "@/lib/session";
+import { transact } from "@/lib/state-store";
+import { randomDraw, TurnRef } from "@/lib/turns";
+import { broadcastState, errorResponse, NO_STORE, readJson } from "@/lib/route-helpers";
 
+export const dynamic = "force-dynamic";
+
+/** Random draw for the current drawer (admin "quick draw"). Body: { gameId?, drawerIndex? } */
 export async function POST(request: NextRequest) {
   try {
-    const gameState: GameState = await request.json();
-
-    // Execute the draw
-    const drawResult = executeDraw(gameState);
-
-    if (!drawResult) {
-      return NextResponse.json(
-        { error: "No valid options available" },
-        { status: 400 }
-      );
+    const session = getSessionFromRequest(request);
+    if (!session || session.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden: Admin access required" }, { status: 403 });
     }
-
-    // Update game state
-    const newGameState = updateGameStateAfterDraw(gameState, drawResult);
-
-    // Persist the new game state on the server
-    setGameState(newGameState);
-
-    // Broadcast the draw result to all connected clients
-    await pusherServer.trigger(PUSHER_CHANNEL, PUSHER_EVENTS.DRAW_EXECUTED, {
-      drawResult,
-      newGameState,
-    });
-
-    return NextResponse.json({
-      success: true,
-      drawResult,
-      newGameState,
-    });
-  } catch (error) {
-    console.error("Error executing draw:", error);
+    const ref = await readJson<TurnRef>(request);
+    const { state, changed } = await transact((s) => randomDraw(s, ref));
+    if (changed) await broadcastState(state);
     return NextResponse.json(
-      { error: "Failed to execute draw" },
-      { status: 500 }
+      { success: true, drawResult: state.lastDraw, newGameState: state },
+      { headers: NO_STORE }
     );
+  } catch (error) {
+    return errorResponse(error, "Failed to execute draw");
   }
 }
-

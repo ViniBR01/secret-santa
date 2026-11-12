@@ -1,666 +1,286 @@
-import { create } from "zustand";
+import { create, StateCreator } from "zustand";
 import { GameState, DrawResult, PlayerSession } from "@/types";
-import {
-  initializeGame,
-  executeDraw,
-  updateGameStateAfterDraw,
-  prepareDrawOptions,
-  finalizeSelection,
-} from "./game-logic";
+import { initializeGame, isNewerState } from "./game-logic";
 
-interface GameStore extends GameState {
+/**
+ * Client-side mirror of the server's game.
+ *
+ * Rules that keep ~25 concurrent screens coherent:
+ *  1. The server is the only source of truth. The client never uploads its
+ *     copy of the game; actions only send *intent* plus the turn they were
+ *     taken on (gameId + drawerIndex) so stale clicks are rejected.
+ *  2. A snapshot is applied only if it is newer (createdAt, version) than the
+ *     one on screen, so late / duplicated / reordered realtime events can
+ *     never move a screen backwards.
+ *  3. Every action applies its own HTTP response, so it works even if the
+ *     realtime connection is down. Realtime is just a fast path.
+ *  4. On (re)connect, tab focus, conflicts and periodically, the client
+ *     resyncs from GET /api/state to recover anything it missed.
+ */
+export interface GameStore extends GameState {
   lastDrawResult: DrawResult | null;
   error: string | null;
-  isGameReady: boolean; // Flag to track if game has been initialized
-  isPusherReady: boolean; // Flag to track if Pusher is connected and subscribed
-  
-  // Animation state (persistent across hot reloads)
-  shownDrawIds: Set<string>; // Track which draws have been shown
-  isAnimating: boolean; // Track if an animation is currently playing
-  
+  isGameReady: boolean;
+  isPusherReady: boolean;
+  /** An action request is in flight (used to disable buttons) */
+  pendingAction: boolean;
+
+  // Animation state
+  shownDrawIds: Set<string>;
+  isAnimating: boolean;
+
   // Actions
   initGame: () => Promise<void>;
-  startGame: () => Promise<void>; // Admin action to start the game
-  performDraw: () => void; // Legacy: for backward compatibility
-  prepareOptions: () => Promise<void>; // New: prepare options for selection
-  makeSelection: (choiceIndex: number) => Promise<void>; // New: finalize selection
+  resync: () => Promise<void>;
+  startGame: () => Promise<void>;
+  prepareOptions: () => Promise<void>;
+  makeSelection: (choiceIndex: number) => Promise<void>;
   quickDrawAll: () => Promise<void>;
-  setGameState: (state: GameState) => void;
+  adminSetNextResult: (selectedGifteeId: string) => Promise<{ ok: boolean; error?: string }>;
+  sendHeartbeat: () => Promise<void>;
+  resetGame: () => Promise<void>;
+
+  /** Apply a server snapshot if it is newer. Returns true if applied. */
+  setGameState: (state: GameState, opts?: { animate?: boolean }) => boolean;
   setLastDrawResult: (result: DrawResult | null) => void;
-  resetGameLocal: () => void; // Reset game state locally without API call
-  resetGame: () => Promise<void>; // Reset game and broadcast to all clients
+  /** Handle a reset broadcast */
+  resetGameLocal: (newGameState?: GameState) => void;
   setPusherReady: (ready: boolean) => void;
-  
-  // Animation management actions
+
   markDrawAsShown: (drawId: string) => void;
   hasShownDraw: (drawId: string) => boolean;
   setIsAnimating: (animating: boolean) => void;
   clearShownDraws: () => void;
-  
-  // Session management actions
+
   updatePlayerSession: (playerId: string, session: PlayerSession) => void;
   removePlayerSession: (playerId: string) => void;
   setAdmin: (adminId: string) => void;
 }
 
-export const useGameStore = create<GameStore>((set, get) => ({
-  // Initial state
-  ...initializeGame(),
-  lastDrawResult: null,
-  error: null,
-  isGameReady: false,
-  isPusherReady: false,
-  
-  // Animation state
-  shownDrawIds: new Set<string>(),
-  isAnimating: false,
+export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
-  // Initialize/reset game
-  initGame: async () => {
+/** Placeholder shown before the first sync: older than any real server state. */
+function placeholderState(): GameState {
+  return { ...initializeGame(), gameId: "", createdAt: 0, version: -1 };
+}
+
+const GAME_FIELDS: (keyof GameState)[] = Object.keys(placeholderState()) as (keyof GameState)[];
+
+function pickGameState(s: GameState): GameState {
+  const out = {} as Record<string, unknown>;
+  for (const k of GAME_FIELDS) out[k] = s[k];
+  return out as unknown as GameState;
+}
+
+/**
+ * Store definition, parameterised by the fetch implementation so that tests can
+ * spin up many independent "browsers" (each with its own cookies and latency).
+ */
+export const createGameStoreState = (
+  fetchImpl: FetchLike = (input, init) => fetch(input, init)
+): StateCreator<GameStore> => (set, get) => {
+  /** POST an action; apply the returned (or conflicting) server state. */
+  async function act(
+    path: string,
+    body: Record<string, unknown>
+  ): Promise<{ ok: boolean; error?: string; status?: number }> {
+    if (get().pendingAction) return { ok: false, error: "busy" }; // ignore double clicks
+    set({ pendingAction: true, error: null });
     try {
-      console.log("🔄 Fetching game state from server...");
-      
-      // Try to fetch the current game state from the server
-      const response = await fetch("/api/state");
-      
-      if (response.ok) {
-        const data = await response.json();
-        
-        // If a game state exists on the server, use it
-        if (data.exists && data.gameState) {
-          console.log("✅ Syncing with existing game state from server");
-          set({
-            ...data.gameState,
-            lastDrawResult: null,
-            error: null,
-            isGameReady: true,
-          });
-          return;
-        }
-      }
-      
-      // If no game state exists, initialize a new game
-      // But first, check one more time to avoid race condition with other clients
-      console.log("⚠️ No game state found, checking again before initializing...");
-      await new Promise(resolve => setTimeout(resolve, 100)); // Brief delay
-      
-      const recheckResponse = await fetch("/api/state");
-      if (recheckResponse.ok) {
-        const recheckData = await recheckResponse.json();
-        if (recheckData.exists && recheckData.gameState) {
-          console.log("✅ Game state now exists (created by another client), syncing...");
-          set({
-            ...recheckData.gameState,
-            lastDrawResult: null,
-            error: null,
-            isGameReady: true,
-          });
-          return;
-        }
-      }
-      
-      // Still no game state, safe to initialize
-      console.log("🆕 Initializing new game state");
-      const initialState = initializeGame();
-      set({
-        ...initialState,
-        lastDrawResult: null,
-        error: null,
-        isGameReady: true,
-      });
-      
-      // Persist the initial state to the server
-      const persistResponse = await fetch("/api/state", {
+      const response = await fetchImpl(path, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ gameState: initialState }),
+        body: JSON.stringify(body),
       });
-      
-      if (persistResponse.ok) {
-        console.log("✅ Initial game state persisted to server");
-      } else {
-        console.error("⚠️ Failed to persist initial state to server");
+      const data = await response.json().catch(() => ({}));
+      const serverState: GameState | undefined = data.newGameState ?? data.gameState ?? undefined;
+      if (serverState) get().setGameState(serverState, { animate: true });
+      if (!response.ok) {
+        // Conflicts mean our screen was stale: we've just been resynced, no need to alarm the user.
+        if (response.status !== 409) set({ error: data.error || "Something went wrong" });
+        if (!serverState) await get().resync();
+        return { ok: false, error: data.error, status: response.status };
       }
+      return { ok: true };
     } catch (error) {
-      console.error("❌ Error initializing game:", error);
-      // Fall back to local initialization
-      const initialState = initializeGame();
+      // Network error / timeout: the action MAY have been committed. Resync to find out.
+      console.error(`Error calling ${path}:`, error);
+      await get().resync();
+      return { ok: false, error: "network" };
+    } finally {
+      set({ pendingAction: false });
+    }
+  }
+
+  /** The turn the user is looking at. Sent with every action. */
+  const turnRef = () => ({ gameId: get().gameId, drawerIndex: get().currentDrawerIndex });
+
+  return {
+    ...placeholderState(),
+    lastDrawResult: null,
+    error: null,
+    isGameReady: false,
+    isPusherReady: false,
+    pendingAction: false,
+    shownDrawIds: new Set<string>(),
+    isAnimating: false,
+
+    initGame: async () => {
+      // Don't replay the reveal of a draw that happened before we opened the page.
+      await get().resync();
+      const last = get().lastDraw;
+      if (last) get().markDrawAsShown(last.drawId);
+    },
+
+    resync: async () => {
+      // A few attempts with backoff; the server creates the game if needed.
+      for (let attempt = 0; attempt < 4; attempt++) {
+        try {
+          const response = await fetchImpl("/api/state", { cache: "no-store" });
+          if (response.ok) {
+            const data = await response.json();
+            if (data.gameState) {
+              get().setGameState(data.gameState, { animate: get().isGameReady });
+              set({ isGameReady: true });
+              return;
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching game state:", error);
+        }
+        await new Promise((r) => setTimeout(r, 200 * 2 ** attempt));
+      }
+      set({ error: "No se pudo conectar con el servidor. Reintentando…" });
+    },
+
+    startGame: async () => {
+      const res = await act("/api/admin/start-game", {});
+      if (!res.ok && res.error && res.error !== "busy") set({ error: res.error });
+    },
+
+    prepareOptions: async () => {
+      const s = get();
+      if (s.isComplete || s.selectionPhase !== "waiting") return;
+      await act("/api/draw/options", turnRef());
+    },
+
+    makeSelection: async (choiceIndex: number) => {
+      if (get().selectionPhase !== "selecting") return;
+      await act("/api/draw/select", { ...turnRef(), choiceIndex });
+    },
+
+    quickDrawAll: async () => {
+      // Each step uses the state returned by the previous one; a conflict resyncs and stops.
+      for (let guard = 0; guard < 200 && !get().isComplete; guard++) {
+        const res = await act("/api/draw", turnRef());
+        if (!res.ok) {
+          if (res.error === "network") continue; // resynced; try the (new) current turn
+          return;
+        }
+      }
+    },
+
+    adminSetNextResult: async (selectedGifteeId: string) => {
+      return act("/api/admin/set-next-result", { ...turnRef(), selectedGifteeId });
+    },
+
+    sendHeartbeat: async () => {
+      try {
+        await fetchImpl("/api/session/heartbeat", { method: "POST" });
+      } catch (error) {
+        console.error("Error sending heartbeat:", error);
+      }
+    },
+
+    resetGame: async () => {
+      try {
+        const response = await fetchImpl("/api/state", { method: "DELETE" });
+        const data = await response.json().catch(() => ({}));
+        if (data.gameState) get().resetGameLocal(data.gameState);
+      } catch (error) {
+        console.error("Error resetting game:", error);
+        await get().resync();
+      }
+    },
+
+    setGameState: (state: GameState, opts = {}) => {
+      const current = get();
+      if (!state || typeof state.version !== "number") return false;
+      if (!isNewerState(state, current)) {
+        // Same or older snapshot: only presence may be fresher.
+        if (state.gameId === current.gameId && state.version === current.version) {
+          set({ activePlayerSessions: mergeSessions(current.activePlayerSessions, state.activePlayerSessions) });
+        }
+        return false;
+      }
+      const sameGame = state.gameId === current.gameId;
+      const newDraw =
+        opts.animate !== false &&
+        state.lastDraw &&
+        state.lastDraw.drawId !== current.lastDraw?.drawId &&
+        !current.shownDrawIds.has(state.lastDraw.drawId);
       set({
-        ...initialState,
-        lastDrawResult: null,
-        error: null,
+        ...pickGameState(state),
+        activePlayerSessions: sameGame
+          ? mergeSessions(current.activePlayerSessions, state.activePlayerSessions)
+          : { ...state.activePlayerSessions },
         isGameReady: true,
+        error: null,
+        ...(newDraw ? { lastDrawResult: state.lastDraw } : {}),
+        ...(sameGame ? {} : { shownDrawIds: new Set<string>(), isAnimating: false, lastDrawResult: null }),
       });
-    }
-  },
+      return true;
+    },
 
-  // Start the game (admin only)
-  startGame: async () => {
-    try {
-      console.log("🚀 Starting game...");
-      
-      // Check if Pusher is configured
-      const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY;
-      const usePusher = pusherKey && pusherKey !== "your_pusher_key_here";
+    setLastDrawResult: (result) => set({ lastDrawResult: result }),
 
-      if (usePusher) {
-        const isPusherReady = get().isPusherReady;
-        
-        if (!isPusherReady) {
-          console.warn("⚠️ Pusher not ready yet, will proceed anyway and fetch state");
-        }
-
-        // Call API endpoint to start game (will broadcast via Pusher)
-        const response = await fetch("/api/admin/start-game", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          set({ error: error.error || "Failed to start game" });
-          return;
-        }
-
-        const result = await response.json();
-        console.log("✅ Game started successfully, received state:", result.gameState);
-
-        // Update state immediately with the response
-        // This ensures the UI updates even if Pusher event is delayed or not ready
-        if (result.gameState) {
-          console.log("🔄 Updating state directly from API response");
-          set({
-            ...result.gameState,
-            isGameReady: true,
-            error: null,
-          });
-        }
-
-        // If Pusher wasn't ready, other clients won't get the update yet
-        // They will get it when Pusher connects, or when they refresh
-        if (!isPusherReady) {
-          console.log("ℹ️ Pusher not ready - other clients will sync when connected");
-        }
+    resetGameLocal: (newGameState?: GameState) => {
+      if (newGameState) {
+        get().setGameState(newGameState, { animate: false });
       } else {
-        // Local-only mode: update state directly
-        console.log("🏠 Local-only mode: updating state directly");
-        set({ gameLifecycle: 'in_progress', error: null });
+        // Legacy broadcast without a payload: fetch the new game.
+        void get().resync();
       }
-    } catch (error) {
-      console.error("Error starting game:", error);
-      set({ error: "Failed to start game. Please try again." });
-    }
-  },
+    },
 
-  // Legacy method: Perform a draw (kept for backward compatibility)
-  performDraw: async () => {
-    const currentState = get();
-    
-    // Check if game is already complete
-    if (currentState.isComplete) {
-      set({ error: "Game is already complete!" });
-      return;
-    }
+    updatePlayerSession: (playerId, session) => {
+      set((s) => ({ activePlayerSessions: { ...s.activePlayerSessions, [playerId]: session } }));
+    },
 
-    try {
-      // Check if Pusher is configured
-      const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY;
-      const usePusher = pusherKey && pusherKey !== "your_pusher_key_here";
+    removePlayerSession: (playerId) => {
+      set((s) => {
+        const sessions = { ...s.activePlayerSessions };
+        if (sessions[playerId]) sessions[playerId] = { ...sessions[playerId], isOnline: false };
+        return { activePlayerSessions: sessions };
+      });
+    },
 
-      if (usePusher) {
-        // Call API endpoint which will broadcast via Pusher
-        const response = await fetch("/api/draw", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(currentState),
-        });
+    setAdmin: (adminId) => set({ adminId }),
 
-        if (!response.ok) {
-          const error = await response.json();
-          set({ error: error.error || "Failed to execute draw" });
-          return;
-        }
+    setPusherReady: (ready) => {
+      set({ isPusherReady: ready });
+      // (Re)subscribed: Pusher does not replay events missed while offline, so catch up.
+      if (ready && get().isGameReady) void get().resync();
+    },
 
-        // State will be updated via Pusher event
-      } else {
-        // Local-only mode: execute draw directly
-        const drawResult = executeDraw(currentState);
-        
-        if (!drawResult) {
-          set({ error: "No valid options available. Game needs to restart." });
-          return;
-        }
+    markDrawAsShown: (drawId) => {
+      set((s) => ({ shownDrawIds: new Set(s.shownDrawIds).add(drawId) }));
+    },
+    hasShownDraw: (drawId) => get().shownDrawIds.has(drawId),
+    setIsAnimating: (animating) => set({ isAnimating: animating }),
+    clearShownDraws: () => set({ shownDrawIds: new Set<string>(), isAnimating: false }),
+  };
+};
 
-        // Update game state locally
-        const newState = updateGameStateAfterDraw(currentState, drawResult);
-        
-        set({
-          ...newState,
-          lastDrawResult: drawResult,
-          error: null,
-        });
-      }
-    } catch (error) {
-      console.error("Error performing draw:", error);
-      set({ error: "Failed to execute draw. Please try again." });
-    }
-  },
+function mergeSessions(
+  local: Record<string, PlayerSession>,
+  incoming: Record<string, PlayerSession>
+): Record<string, PlayerSession> {
+  const merged = { ...local };
+  for (const [id, s] of Object.entries(incoming ?? {})) {
+    if (!merged[id] || s.lastSeen >= merged[id].lastSeen) merged[id] = s;
+  }
+  return merged;
+}
 
-  // New: Prepare options for current drawer
-  prepareOptions: async () => {
-    try {
-      const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY;
-      const usePusher = pusherKey && pusherKey !== "your_pusher_key_here";
-
-      if (usePusher) {
-        // Check if Pusher is ready before proceeding
-        const isPusherReady = get().isPusherReady;
-        if (!isPusherReady) {
-          console.warn("⚠️ Pusher not ready, waiting for connection...");
-          set({ error: "Connecting to game server, please wait..." });
-          return;
-        }
-
-        // IMPORTANT: Fetch fresh state from server before performing action
-        // This prevents race conditions where local state is stale
-        console.log("🔄 Fetching fresh state before preparing options...");
-        
-        let currentState;
-        try {
-          const stateResponse = await fetch("/api/state");
-          
-          if (!stateResponse.ok) {
-            console.error("❌ HTTP error fetching state:", stateResponse.status);
-            throw new Error("State fetch failed");
-          }
-          
-          const stateData = await stateResponse.json();
-          console.log("📦 State data received:", stateData);
-          
-          // Check if server returned an error object
-          if (stateData.error) {
-            console.error("❌ Server returned error:", stateData.error);
-            throw new Error(stateData.error);
-          }
-          
-          // Validate response structure
-          if (stateData.exists === undefined) {
-            console.error("❌ Invalid response structure:", stateData);
-            throw new Error("Invalid state response");
-          }
-          
-          // Use server state if available, otherwise fall back to local
-          if (stateData.exists && stateData.gameState) {
-            console.log("✅ Using fresh state from server");
-            currentState = stateData.gameState;
-          } else {
-            console.warn("⚠️ No game state on server, using local state");
-            currentState = get();
-          }
-        } catch (fetchError) {
-          console.error("❌ Error fetching state:", fetchError);
-          console.log("⚠️ Falling back to local state");
-          currentState = get();
-        }
-        
-        // Validate state before proceeding
-        if (currentState.isComplete) {
-          set({ error: "Game is already complete!" });
-          return;
-        }
-        
-        // Call API to get options (will broadcast via Pusher)
-        const response = await fetch("/api/draw/options", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(currentState),
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          set({ error: error.error || "Failed to prepare options" });
-          return;
-        }
-
-        // State will be updated via Pusher event
-      } else {
-        // Local-only mode: prepare options directly
-        const currentState = get();
-        const drawOptions = prepareDrawOptions(currentState);
-        
-        if (!drawOptions || drawOptions.viableGifteeIds.length === 0) {
-          set({ error: "No valid options available. Game needs to restart." });
-          return;
-        }
-
-        set({
-          selectionPhase: 'selecting',
-          currentOptions: drawOptions.viableGifteeIds,
-          selectedIndex: null,
-          error: null,
-        });
-      }
-    } catch (error) {
-      console.error("Error preparing options:", error);
-      set({ error: "Failed to prepare options. Please try again." });
-    }
-  },
-
-  // New: Make a selection
-  makeSelection: async (choiceIndex: number) => {
-    try {
-      const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY;
-      const usePusher = pusherKey && pusherKey !== "your_pusher_key_here";
-
-      if (usePusher) {
-        // Check if Pusher is ready before proceeding
-        const isPusherReady = get().isPusherReady;
-        if (!isPusherReady) {
-          console.warn("⚠️ Pusher not ready, waiting for connection...");
-          set({ error: "Connecting to game server, please wait..." });
-          return;
-        }
-
-        // IMPORTANT: Fetch fresh state from server before performing action
-        console.log("🔄 Fetching fresh state before making selection...");
-        
-        let currentState;
-        try {
-          const stateResponse = await fetch("/api/state");
-          
-          if (!stateResponse.ok) {
-            console.error("❌ HTTP error fetching state:", stateResponse.status);
-            throw new Error("State fetch failed");
-          }
-          
-          const stateData = await stateResponse.json();
-          console.log("📦 State data received:", stateData);
-          
-          // Check if server returned an error object
-          if (stateData.error) {
-            console.error("❌ Server returned error:", stateData.error);
-            throw new Error(stateData.error);
-          }
-          
-          // Validate response structure
-          if (stateData.exists === undefined) {
-            console.error("❌ Invalid response structure:", stateData);
-            throw new Error("Invalid state response");
-          }
-          
-          // Use server state if available, otherwise fall back to local
-          if (stateData.exists && stateData.gameState) {
-            console.log("✅ Using fresh state from server");
-            currentState = stateData.gameState;
-          } else {
-            console.warn("⚠️ No game state on server, using local state");
-            currentState = get();
-          }
-        } catch (fetchError) {
-          console.error("❌ Error fetching state:", fetchError);
-          console.log("⚠️ Falling back to local state");
-          currentState = get();
-        }
-        
-        // Validate state before proceeding
-        if (currentState.selectionPhase !== 'selecting') {
-          set({ error: "Not in selection phase!" });
-          return;
-        }
-
-        // Update to revealing phase immediately for better UX
-        set({ selectionPhase: 'revealing', selectedIndex: choiceIndex });
-
-        // Call API to finalize selection (will broadcast via Pusher)
-        const response = await fetch("/api/draw/select", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ gameState: currentState, choiceIndex }),
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          set({ error: error.error || "Failed to finalize selection", selectionPhase: 'selecting' });
-          return;
-        }
-
-        // State will be updated via Pusher event
-      } else {
-        // Local-only mode: finalize selection directly
-        const currentState = get();
-        
-        if (currentState.selectionPhase !== 'selecting') {
-          set({ error: "Not in selection phase!" });
-          return;
-        }
-
-        // Update to revealing phase immediately for better UX
-        set({ selectionPhase: 'revealing', selectedIndex: choiceIndex });
-        
-        const drawResult = finalizeSelection(currentState, choiceIndex);
-        
-        if (!drawResult) {
-          set({ error: "Invalid selection. Please try again.", selectionPhase: 'selecting' });
-          return;
-        }
-
-        // Update game state
-        const newState = updateGameStateAfterDraw(currentState, drawResult);
-        
-        set({
-          ...newState,
-          lastDrawResult: drawResult,
-          error: null,
-        });
-      }
-    } catch (error) {
-      console.error("Error making selection:", error);
-      set({ error: "Failed to finalize selection. Please try again.", selectionPhase: 'selecting' });
-    }
-  },
-
-  // Quick draw all remaining players
-  quickDrawAll: async () => {
-    const currentState = get();
-    
-    // Check if game is already complete
-    if (currentState.isComplete) {
-      set({ error: "Game is already complete!" });
-      return;
-    }
-
-    try {
-      // Check if Pusher is configured
-      const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY;
-      const usePusher = pusherKey && pusherKey !== "your_pusher_key_here";
-
-      let state: GameState = currentState;
-
-      if (usePusher) {
-        // Call API endpoint for each remaining draw
-        while (!state.isComplete) {
-          const response = await fetch("/api/draw", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(state),
-          });
-
-          if (!response.ok) {
-            const error = await response.json();
-            set({ error: error.error || "Failed to execute draw" });
-            return;
-          }
-
-          const result = await response.json();
-          state = result.newGameState;
-
-          // Small delay to allow Pusher events to propagate
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-      } else {
-        // Local-only mode: execute all draws directly
-        while (!state.isComplete) {
-          const drawResult = executeDraw(state);
-          
-          if (!drawResult) {
-            set({ error: "No valid options available. Game needs to restart." });
-            return;
-          }
-
-          // Update game state locally
-          state = updateGameStateAfterDraw(state, drawResult);
-          
-          set({
-            ...state,
-            lastDrawResult: drawResult,
-            error: null,
-          });
-
-          // Small delay between draws for better UX
-          await new Promise(resolve => setTimeout(resolve, 200));
-        }
-      }
-    } catch (error) {
-      console.error("Error performing quick draw all:", error);
-      set({ error: "Failed to execute quick draw. Please try again." });
-    }
-  },
-
-  // Set game state (for syncing from server/pusher)
-  setGameState: (state: GameState) => {
-    console.log("📥 Setting game state:", { 
-      selectionPhase: state.selectionPhase,
-      currentDrawerIndex: state.currentDrawerIndex,
-      hasOptions: state.currentOptions?.length > 0,
-      gameLifecycle: state.gameLifecycle // DEBUG: Log lifecycle state
-    });
-    console.log("🔄 Full state being set:", state); // DEBUG: Log full state
-    
-    // Intelligently merge activePlayerSessions to preserve local real-time updates
-    const currentState = get();
-    const mergedSessions: Record<string, PlayerSession> = { ...state.activePlayerSessions };
-    
-    // For each player in local state, use the most recent data
-    Object.keys(currentState.activePlayerSessions).forEach(playerId => {
-      const localSession = currentState.activePlayerSessions[playerId];
-      const incomingSession = state.activePlayerSessions[playerId];
-      
-      // If both exist, use whichever has the most recent lastSeen
-      if (localSession && incomingSession) {
-        mergedSessions[playerId] = localSession.lastSeen > incomingSession.lastSeen 
-          ? localSession 
-          : incomingSession;
-      } else if (localSession) {
-        // Keep local session if not in incoming state
-        mergedSessions[playerId] = localSession;
-      }
-    });
-    
-    // Preserve isGameReady flag when updating state
-    set({
-      ...state,
-      activePlayerSessions: mergedSessions,
-      isGameReady: true,
-    });
-  },
-
-  // Set last draw result
-  setLastDrawResult: (result: DrawResult | null) => {
-    set({ lastDrawResult: result });
-  },
-
-  // Reset game locally (without API call)
-  resetGameLocal: () => {
-    console.log("🔄 Resetting game state locally...");
-    const initialState = initializeGame();
-    set({
-      ...initialState,
-      lastDrawResult: null,
-      error: null,
-      isGameReady: true,
-      shownDrawIds: new Set<string>(),
-      isAnimating: false,
-    });
-  },
-
-  // Reset game (triggers server broadcast)
-  resetGame: async () => {
-    try {
-      // Check if Pusher is configured
-      const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY;
-      const usePusher = pusherKey && pusherKey !== "your_pusher_key_here";
-
-      if (usePusher) {
-        // Call API endpoint to broadcast reset
-        console.log("📡 Calling DELETE /api/state to broadcast reset...");
-        await fetch("/api/state", {
-          method: "DELETE",
-        });
-        // Don't reset locally here - wait for the GAME_RESET event from Pusher
-        console.log("✅ Reset broadcasted, waiting for Pusher event...");
-      } else {
-        // No Pusher, reset locally only
-        get().resetGameLocal();
-      }
-    } catch (error) {
-      console.error("Error resetting game:", error);
-      // Reset locally if API call fails
-      get().resetGameLocal();
-    }
-  },
-
-  // Update player session (when player connects)
-  updatePlayerSession: (playerId: string, session: PlayerSession) => {
-    set((state) => ({
-      activePlayerSessions: {
-        ...state.activePlayerSessions,
-        [playerId]: session,
-      },
-    }));
-  },
-
-  // Remove player session (when player disconnects)
-  removePlayerSession: (playerId: string) => {
-    set((state) => {
-      const newSessions = { ...state.activePlayerSessions };
-      delete newSessions[playerId];
-      return { activePlayerSessions: newSessions };
-    });
-  },
-
-  // Set admin ID
-  setAdmin: (adminId: string) => {
-    set({ adminId });
-  },
-
-  // Set Pusher ready status
-  setPusherReady: (ready: boolean) => {
-    console.log(`🔌 Pusher ready status: ${ready}`);
-    set({ isPusherReady: ready });
-  },
-  
-  // Animation management
-  markDrawAsShown: (drawId: string) => {
-    console.log(`✅ Marking draw as shown: ${drawId}`);
-    set((state) => {
-      const newSet = new Set(state.shownDrawIds);
-      newSet.add(drawId);
-      return { shownDrawIds: newSet };
-    });
-  },
-  
-  hasShownDraw: (drawId: string) => {
-    return get().shownDrawIds.has(drawId);
-  },
-  
-  setIsAnimating: (animating: boolean) => {
-    console.log(`🎬 Animation state: ${animating ? 'STARTED' : 'ENDED'}`);
-    set({ isAnimating: animating });
-  },
-  
-  clearShownDraws: () => {
-    console.log(`🧹 Clearing all shown draws`);
-    set({ shownDrawIds: new Set<string>(), isAnimating: false });
-  },
-}));
-
+export const useGameStore = create<GameStore>()(createGameStoreState());

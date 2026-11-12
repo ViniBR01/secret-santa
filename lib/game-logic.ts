@@ -33,11 +33,33 @@ export function getValidGiftees(
   );
 }
 
+function newGameId(): string {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+/**
+ * True if `incoming` is a strictly newer snapshot than `current`.
+ * A later game (reset / new game) always wins; within a game the higher version wins.
+ */
+export function isNewerState(
+  incoming: Pick<GameState, "createdAt" | "version">,
+  current: Pick<GameState, "createdAt" | "version">
+): boolean {
+  if (incoming.createdAt !== current.createdAt) return incoming.createdAt > current.createdAt;
+  return incoming.version > current.version;
+}
+
 /**
  * Initialize a new game state
  */
 export function initializeGame(): GameState {
   return {
+    gameId: newGameId(),
+    createdAt: Date.now(),
+    version: 0,
+    lastDraw: null,
     currentDrawerIndex: 0,
     assignments: {},
     availableGiftees: familyConfig.members.map((m) => m.id),
@@ -83,6 +105,24 @@ function canCompleteDraw(
 
   // No valid option leads to completion
   return false;
+}
+
+/**
+ * True if assigning `gifteeId` to the current drawer still leaves a way to
+ * complete the whole draw. Used to reject admin overrides that would make the
+ * game impossible to finish.
+ */
+export function canCompleteWith(gameState: GameState, gifteeId: string): boolean {
+  const { currentDrawerIndex, availableGiftees, assignments } = gameState;
+  const drawerId = familyConfig.drawOrder[currentDrawerIndex];
+  if (!drawerId || !isValidDraw(drawerId, gifteeId) || !availableGiftees.includes(gifteeId)) {
+    return false;
+  }
+  return canCompleteDraw(
+    currentDrawerIndex + 1,
+    { ...assignments, [drawerId]: gifteeId },
+    availableGiftees.filter((id) => id !== gifteeId)
+  );
 }
 
 /**
@@ -159,6 +199,10 @@ export function updateGameStateAfterDraw(
   const isComplete = newDrawerIndex >= familyConfig.drawOrder.length;
 
   return {
+    gameId: gameState.gameId,
+    createdAt: gameState.createdAt,
+    version: gameState.version,
+    lastDraw: drawResult,
     currentDrawerIndex: newDrawerIndex,
     assignments: newAssignments,
     availableGiftees: newAvailableGiftees,
