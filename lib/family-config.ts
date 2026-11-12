@@ -42,7 +42,7 @@ export const familyConfig: FamilyConfig = {
     {
       id: "sanches-pelaez",
       name: "Los de Quito",
-      memberIds: ["raul", "mimi", "matias"],
+      memberIds: ["mimi", "matias"],
       bgColor: "bg-teal-50 dark:bg-teal-800/35",
       bgGradient: "bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-700/40 dark:to-cyan-600/35",
     },
@@ -87,7 +87,6 @@ export const familyConfig: FamilyConfig = {
     //Ale Sola
     { id: "ale", name: "Ale", clicId: "ale-sola", avatar: "/avatars/ale.png", emoji: "⚖️" },
     // Los de Quito
-    { id: "raul", name: "Raúl", clicId: "sanches-pelaez", avatar: "/avatars/raul.png", emoji: "🇪🇨" },
     { id: "mimi", name: "Mimi", clicId: "sanches-pelaez", avatar: "/avatars/lau.png", emoji: "🎾" },
     { id: "matias", name: "Matías", clicId: "sanches-pelaez", avatar: "/avatars/matias.png", emoji: "🍼" },
     // Los de EEUU
@@ -116,7 +115,7 @@ export const familyConfig: FamilyConfig = {
   drawOrder: [
     "abuelo", "abuela", "magos", "rebe",
     "hugo-grande", "beni", "laura", "mari",
-    "tono", "carton", "irene", "raul", "dali",
+    "tono", "carton", "irene", "dali",
     "mimi", "vini",  "ale", "tipi",
     "mariu", "diana", "huguito",
     "marifer", "dani", "leono",
