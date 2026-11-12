@@ -67,7 +67,7 @@ export function AdminStartGame() {
               👑 Admin
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-primary">Intercambio 2025</h1>
+          <h1 className="text-3xl font-bold text-primary">Intercambio 2026</h1>
           <p className="text-lg text-muted-foreground">
             ¿Listos para comenzar el intercambio de regalos?
           </p>

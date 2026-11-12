@@ -69,7 +69,7 @@ export default function IdentifyPage() {
       <Card className="w-full max-w-md p-8 space-y-6">
         <div className="text-center space-y-4">
           <Gift className="w-16 h-16 mx-auto text-primary" />
-          <h1 className="text-3xl font-bold text-primary">Intercambio 2025</h1>
+          <h1 className="text-3xl font-bold text-primary">Intercambio 2026</h1>
           <p className="text-muted-foreground">
             ¡Bienvenidos al intercambio familiar de regalos!
           </p>

@@ -207,7 +207,7 @@ export function GameBoard({ role, playerId }: GameBoardProps) {
             <div className="flex-1" />
             <h1 className="text-4xl sm:text-6xl font-bold text-primary flex items-center gap-3 flex-1 justify-center">
               <Gift className="w-10 h-10 sm:w-14 sm:h-14" />
-              Intercambio 2025
+              Intercambio 2026
             </h1>
             <div className="flex-1 flex justify-end">
               <div className="flex flex-col gap-2">

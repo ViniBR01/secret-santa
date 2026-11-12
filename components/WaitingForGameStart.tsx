@@ -33,7 +33,7 @@ export function WaitingForGameStart({ playerName }: WaitingForGameStartProps) {
       <Card className="w-full max-w-md p-8 space-y-6">
         <div className="text-center space-y-4">
           <Gift className="w-16 h-16 mx-auto text-primary animate-pulse" />
-          <h1 className="text-3xl font-bold text-primary">Intercambio 2025</h1>
+          <h1 className="text-3xl font-bold text-primary">Intercambio 2026</h1>
           
           {playerName && (
             <div className="inline-block px-4 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
